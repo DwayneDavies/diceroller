@@ -10,49 +10,61 @@ export function analyticStats(n, m, z) {
   };
 }
 
-function binom(n, k) {
-  if (k < 0 || k > n) return 0;
-  if (k === 0 || k === n) return 1;
-  k = Math.min(k, n - k);
-  let res = 1;
-  for (let i = 1; i <= k; i++) {
-    res = res * (n - k + i) / i;
-  }
-  return res;
-}
-
-function diceCountExact(s, n, m) {
-  if (s < n || s > n * m) return 0;
-  const maxK = Math.floor((s - n) / m);
-  let total = 0;
-  for (let k = 0; k <= maxK; k++) {
-    const term = binom(n, k) * binom(s - m * k - 1, n - 1);
-    total += (k % 2 === 0 ? term : -term);
-  }
-  return total;
-}
-
+// Exact distribution of the sum of n dice with m sides, built one die at a
+// time. Works in probabilities (never raw counts) so nothing overflows, and a
+// sliding window keeps each step linear in the number of possible sums.
 export function diceSumDistribution(n, m, mod = 0) {
-  const baseTotal = Math.pow(m, n);
-  const result = [];
-  for (let s = n; s <= n * m; s++) {
-    const count = diceCountExact(s, n, m);
-    if (count > 0) {
-      result.push({ sum: s + mod, count, p: count / baseTotal });
+  if (n < 1 || m < 1) return [];
+  let probs = [1]; // probs[i] = P(sum of dice so far = minSum + i)
+  for (let die = 1; die <= n; die++) {
+    const next = new Array(probs.length + m - 1).fill(0);
+    let window = 0;
+    for (let i = 0; i < next.length; i++) {
+      if (i < probs.length) window += probs[i];
+      if (i - m >= 0) window -= probs[i - m];
+      next[i] = Math.max(window, 0) / m;
     }
+    probs = next;
   }
-  return result;
+  const outcomes = Math.pow(m, n);
+  return probs.map((p, i) => ({ sum: n + i + mod, p, count: p * outcomes }));
 }
+
+// Merge neighbouring sums so the chart never needs more than maxRows rows.
+export function bucketDistribution(dist, maxRows) {
+  if (dist.length <= maxRows) {
+    return dist.map((d) => ({ label: String(d.sum), p: d.p, count: d.count }));
+  }
+  const size = Math.ceil(dist.length / maxRows);
+  const buckets = [];
+  for (let i = 0; i < dist.length; i += size) {
+    const group = dist.slice(i, i + size);
+    buckets.push({
+      label: `${group[0].sum}\u2013${group[group.length - 1].sum}`,
+      p: group.reduce((a, d) => a + d.p, 0),
+      count: group.reduce((a, d) => a + d.count, 0),
+    });
+  }
+  return buckets;
+}
+
+function formatCount(count) {
+  return count < Number.MAX_SAFE_INTEGER
+    ? String(Math.round(count))
+    : count.toExponential(3);
+}
+
+const MAX_CHART_ROWS = 100;
 
 export function drawDistribution(times, sides, mod) {
   const canvas = document.getElementById("stats-chart");
   const ctx = canvas.getContext("2d");
-  const dist = diceSumDistribution(times, sides, mod);
-  if (dist.length === 0) return;
-  const maxP = Math.max(...dist.map(d => d.p));
+  const rows = bucketDistribution(diceSumDistribution(times, sides, mod), MAX_CHART_ROWS);
+  if (rows.length === 0) return;
+  const maxP = Math.max(...rows.map(d => d.p));
   const rowHeight = 24;
   const cssWidth = canvas.clientWidth || 600;
-  const cssHeight = dist.length * rowHeight + 40;
+  const cssHeight = rows.length * rowHeight + 40;
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = cssWidth + "px";
   canvas.style.height = cssHeight + "px";
@@ -64,15 +76,17 @@ export function drawDistribution(times, sides, mod) {
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   const showPercentages = loadSetting("showPercentages", true);
-  dist.forEach((d, i) => {
+  const barStart = 10 + Math.max(...rows.map(d => ctx.measureText(d.label + ":").width));
+  const barSpace = Math.max(cssWidth - barStart - 90, 10);
+  rows.forEach((d, i) => {
     const y = i * rowHeight + rowHeight/2 + 20;
-    const barLen = (d.p / maxP) * (cssWidth - 160);
+    const barLen = (d.p / maxP) * barSpace;
     ctx.fillStyle = "#fff";
-    ctx.fillText(d.sum + ":", 5, y);
+    ctx.fillText(d.label + ":", 5, y);
     ctx.fillStyle = "#ffd700";
-    ctx.fillRect(40, y - 8, barLen, 16);
+    ctx.fillRect(barStart, y - 8, barLen, 16);
     ctx.fillStyle = "#fff";
-    ctx.fillText(showPercentages ? (d.p * 100).toFixed(2) + "%" : d.count, 45 + barLen, y);
+    ctx.fillText(showPercentages ? (d.p * 100).toFixed(2) + "%" : formatCount(d.count), barStart + 5 + barLen, y);
   });
 }
 
