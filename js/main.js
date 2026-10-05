@@ -18,6 +18,7 @@ import {
 } from "./settings.js";
 import { saveSetting } from "./storage.js";
 import { initResultsMenu } from "./results-menu.js";
+import { restoreResults } from "./results.js";
 
 // Expose handlers used by inline onclick attributes in index.html
 Object.assign(window, {
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPresetEditor();
   initVersus();
   initSettingsModal();
+  restoreResults();
   initResultsMenu();
 
   document.querySelector(".dice-row").addEventListener("click", (e) => {

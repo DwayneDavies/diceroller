@@ -1,4 +1,6 @@
 import { formatBreakdown, formatVersusText, versusVerdict } from "./core.js";
+import { MAX_RESULTS, appendRecord, sanitizeRecords } from "./history.js";
+import { loadSetting, saveSetting } from "./storage.js";
 
 // --- d20 natural 1 / 20 ---
 function dieValueClass(value, sides) {
@@ -23,9 +25,23 @@ export function d20OutcomeBanner(rolls, sides, rollKind) {
   return { text: isNat1 ? "Natural 1" : "Natural 20", isNat1 };
 }
 
-// --- Copy last roll ---
+// --- Roll history ---
+// Rolls are stored as plain records (oldest first, see history.js), drawn
+// newest first, saved so they survive a reload, and capped at MAX_RESULTS.
+let records = [];
 let lastRoll = null;
+let undoSnapshot = null;
+let undoTimer = null;
 
+function notifyChange() {
+  document.dispatchEvent(new CustomEvent("resultschange"));
+}
+
+function persist() {
+  saveSetting("results", records);
+}
+
+// --- Copy last roll ---
 function copyLabel(labelText, rollKind) {
   const short = {
     attack: "Attack",
@@ -34,6 +50,22 @@ function copyLabel(labelText, rollKind) {
   };
   if (short[rollKind]) return short[rollKind];
   return labelText.replace(/:$/, "").trim();
+}
+
+function lastRollFor(record) {
+  if (record.kind === "versus") {
+    return { copyText: formatVersusText(record.result, record.nameA, record.nameB) };
+  }
+  const banner = d20OutcomeBanner(record.rolls, record.sides, record.rollKind);
+  return {
+    labelText: record.labelText,
+    rolls: record.rolls,
+    result: record.result,
+    mod: record.mod,
+    rollKind: record.rollKind,
+    banner: banner ? banner.text : null,
+    breakdownRolls: record.breakdownRolls,
+  };
 }
 
 export function formatLastRollText() {
@@ -52,14 +84,8 @@ export function hasLastRoll() {
   return lastRoll !== null;
 }
 
-export function clearLastRoll() {
-  lastRoll = null;
-}
-
-export function clearResults() {
-  const resultsBox = document.getElementById("results");
-  if (resultsBox) resultsBox.innerHTML = "";
-  clearLastRoll();
+export function hasResults() {
+  return records.length > 0;
 }
 
 export async function copyLastRoll() {
@@ -82,20 +108,28 @@ export async function copyLastRoll() {
   }
 }
 
-export function showCopyToast() {
-  const hint = document.getElementById("copy-last-hint");
+function showToast(id, ms) {
+  const hint = document.getElementById(id);
   if (!hint) return;
   hint.classList.remove("hidden");
-  clearTimeout(showCopyToast._timer);
-  showCopyToast._timer = setTimeout(() => hint.classList.add("hidden"), 2000);
+  clearTimeout(hint._timer);
+  hint._timer = setTimeout(() => hint.classList.add("hidden"), ms);
 }
 
-// --- Result box helper ---
-export function addResultBox(labelText, rolls, result, typeClass = "", options = {}) {
-  const sides = options.sides;
-  const rollKind = options.rollKind || "plain";
+function hideToast(id) {
+  const hint = document.getElementById(id);
+  if (!hint) return;
+  clearTimeout(hint._timer);
+  hint.classList.add("hidden");
+}
 
-  const resultsBox = document.getElementById("results");
+export function showCopyToast() {
+  showToast("copy-last-hint", 2000);
+}
+
+// --- Drawing ---
+function buildRollBox(record) {
+  const { labelText, rolls, result, typeClass, sides, rollKind } = record;
   const div = document.createElement("div");
   div.className = "result-box" + (typeClass ? " " + typeClass : "");
 
@@ -127,21 +161,9 @@ export function addResultBox(labelText, rolls, result, typeClass = "", options =
   total.className = "result-total";
   total.textContent = `Result: ${result}`;
   div.appendChild(total);
-
-  resultsBox.appendChild(div);
-
-  lastRoll = {
-    labelText,
-    rolls,
-    result,
-    mod: options.mod || 0,
-    rollKind,
-    banner: banner ? banner.text : null,
-    breakdownRolls: options.breakdownRolls,
-  };
+  return div;
 }
 
-// --- Versus result box ---
 function versusSideElement(name, side, sides, isWinner) {
   const el = document.createElement("div");
   el.className = "versus-side" + (isWinner ? " is-winner" : "");
@@ -166,8 +188,8 @@ function versusSideElement(name, side, sides, isWinner) {
   return el;
 }
 
-export function addVersusResultBox(result, nameA, nameB, sides) {
-  const resultsBox = document.getElementById("results");
+function buildVersusBox(record) {
+  const { result, nameA, nameB, sides } = record;
   const div = document.createElement("div");
   div.className = "result-box result-versus";
 
@@ -185,7 +207,78 @@ export function addVersusResultBox(result, nameA, nameB, sides) {
     versusSideElement(nameB, result.b, sides, result.winner === "b"),
     verdict
   );
-  resultsBox.appendChild(div);
+  return div;
+}
 
-  lastRoll = { copyText: formatVersusText(result, nameA, nameB) };
+// Draws one record at the top of the list (newest first).
+function drawRecord(record) {
+  const resultsBox = document.getElementById("results");
+  if (!resultsBox) return;
+  resultsBox.prepend(record.kind === "versus" ? buildVersusBox(record) : buildRollBox(record));
+  while (resultsBox.children.length > MAX_RESULTS) resultsBox.lastElementChild.remove();
+}
+
+function drawAll() {
+  const resultsBox = document.getElementById("results");
+  if (resultsBox) resultsBox.replaceChildren();
+  records.forEach(drawRecord);
+  lastRoll = records.length ? lastRollFor(records[records.length - 1]) : null;
+}
+
+function addRecord(record) {
+  // A new roll after "Clear" means the cleared rolls can no longer come back.
+  undoSnapshot = null;
+  hideToast("undo-hint");
+  records = appendRecord(records, record);
+  drawRecord(record);
+  lastRoll = lastRollFor(record);
+  persist();
+  notifyChange();
+}
+
+// --- Public: adding, restoring, clearing ---
+export function addResultBox(labelText, rolls, result, typeClass = "", options = {}) {
+  addRecord({
+    kind: "roll",
+    labelText,
+    rolls,
+    result,
+    typeClass,
+    sides: options.sides,
+    rollKind: options.rollKind || "plain",
+    mod: options.mod || 0,
+    breakdownRolls: options.breakdownRolls,
+  });
+}
+
+export function addVersusResultBox(result, nameA, nameB, sides) {
+  addRecord({ kind: "versus", nameA, nameB, sides, result });
+}
+
+// Called once at startup: brings back the rolls saved by the last visit.
+export function restoreResults() {
+  records = sanitizeRecords(loadSetting("results", []));
+  drawAll();
+  notifyChange();
+}
+
+export function clearResults() {
+  if (records.length === 0) return;
+  undoSnapshot = records;
+  records = [];
+  drawAll();
+  persist();
+  notifyChange();
+  showToast("undo-hint", 8000);
+}
+
+export function undoClear() {
+  if (!undoSnapshot) return false;
+  records = undoSnapshot;
+  undoSnapshot = null;
+  hideToast("undo-hint");
+  drawAll();
+  persist();
+  notifyChange();
+  return true;
 }

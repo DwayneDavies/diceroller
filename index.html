@@ -84,8 +84,13 @@
   </details>
 
   <!-- Results Log -->
-  <div id="results"></div>
-  <p id="copy-last-hint" class="copy-last-hint hidden">Last roll copied to clipboard.</p>
+  <div class="results-toolbar">
+    <button type="button" id="copy-last-btn" class="tool-btn" title="Copy last roll (Alt+C)">Copy last roll</button>
+    <button type="button" id="clear-results-btn" class="tool-btn">Clear results</button>
+  </div>
+  <p id="copy-last-hint" class="copy-last-hint hidden" role="status">Last roll copied to clipboard.</p>
+  <p id="undo-hint" class="copy-last-hint hidden" role="status">Results cleared. <button type="button" id="undo-clear" class="link-btn">Undo</button></p>
+  <div id="results" role="log" aria-live="polite" aria-relevant="additions" aria-label="Roll results"></div>
 
   <!-- Custom context menu -->
   <ul id="results-menu" class="context-menu">

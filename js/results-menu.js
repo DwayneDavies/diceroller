@@ -2,7 +2,9 @@ import {
   copyLastRoll,
   showCopyToast,
   hasLastRoll,
+  hasResults,
   clearResults,
+  undoClear,
 } from "./results.js";
 
 export function initResultsMenu() {
@@ -12,6 +14,26 @@ export function initResultsMenu() {
   const clearItem = document.getElementById("clear-results");
 
   if (!resultsBox || !menu || !copyItem || !clearItem) return;
+
+  // Visible buttons that do the same as the menu items and Alt+C
+  const copyBtn = document.getElementById("copy-last-btn");
+  const clearBtn = document.getElementById("clear-results-btn");
+  const undoBtn = document.getElementById("undo-clear");
+
+  function refreshToolbar() {
+    if (copyBtn) copyBtn.disabled = !hasLastRoll();
+    if (clearBtn) clearBtn.disabled = !hasResults();
+  }
+  document.addEventListener("resultschange", refreshToolbar);
+  refreshToolbar();
+
+  async function copyAndToast() {
+    if (!hasLastRoll()) return;
+    if (await copyLastRoll()) showCopyToast();
+  }
+  if (copyBtn) copyBtn.addEventListener("click", copyAndToast);
+  if (clearBtn) clearBtn.addEventListener("click", clearResults);
+  if (undoBtn) undoBtn.addEventListener("click", undoClear);
 
   function updateCopyMenuItem() {
     copyItem.classList.toggle("menu-disabled", !hasLastRoll());

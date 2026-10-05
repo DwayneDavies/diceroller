@@ -188,7 +188,8 @@ h1 {
 /* Results log */
 #results {
   box-sizing: border-box;
-  margin: 20px auto;
+  max-height: min(60vh, 600px);
+  margin: 12px auto 20px;
   padding: 18px;
   width: 95%;
   max-width: 900px;
@@ -204,6 +205,48 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Buttons above the results */
+.results-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 95%;
+  max-width: 900px;
+  margin: 12px auto 0;
+}
+
+.tool-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--summary);
+  font: inherit;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tool-btn:hover:not(:disabled) { background: var(--menu-hover); }
+.tool-btn:disabled { opacity: 0.45; cursor: default; }
+
+.link-btn {
+  padding: 0 2px;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#results:empty::before {
+  content: "Your rolls will appear here.";
+  color: var(--muted);
+  font-size: 0.9em;
 }
 
 .result-box {
@@ -301,7 +344,7 @@ details summary::before {
   transition: transform 0.2s ease;
 }
 
-details[open] summary::before {
+details[open] > summary::before {
   content: "▼ ";
 }
 
@@ -485,6 +528,8 @@ details button:not(.dice-btn):not(.preset-btn):hover {
     height: auto;
     max-height: 300px;
   }
+
+  .results-toolbar { width: 100%; }
 
   details {
     width: 100%;
