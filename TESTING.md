@@ -6,7 +6,7 @@
 npm test
 ```
 
-Runs the unit tests (no install needed, Node 20+): dice and roll logic, the
+Runs the unit tests (no install needed, Node 20+): dice and roll logic, theme text contrast, the
 exact roll-odds math, versus rolls, saved-data validation, the offline file
 list, and the version number.
 
@@ -27,7 +27,7 @@ because browsers block the JavaScript modules on `file://` pages.
 - [ ] Versus Roll: both sides roll, the winner is highlighted, the tie rule works.
 - [ ] Custom Roll and Find Roll Stats (try 50d6) work; the chart is readable.
 - [ ] Settings opens, Escape or ✕ closes it, and typing in a field does not zoom the page (iPhone).
-- [ ] All three themes look right (page, panels, Settings, chart).
+- [ ] All four themes look right (Midnight, Violet, Parchment, Neon): page, panels, Settings, chart, and each die has its own colour.
 - [ ] Reload: theme, sound setting, presets, modifiers, Versus values and recent rolls are all still there.
 - [ ] Sounds are off by default; turn them on and each die makes a sound.
       On iPhone, sound is silent when the ring/silent switch is on silent.

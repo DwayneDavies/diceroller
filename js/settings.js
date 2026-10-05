@@ -2,13 +2,14 @@ import { loadSetting } from "./storage.js";
 import { SOUND_DEFAULT } from "./sound.js";
 import { redrawDistribution } from "./stats.js";
 
-export const THEMES = ["dark", "parchment", "neon"];
+export const DEFAULT_THEME = "midnight";
+export const THEMES = ["midnight", "dark", "parchment", "neon"];
 // Browser toolbar color on phones, matched to each theme's background.
-const THEME_COLORS = { dark: "#2e003e", parchment: "#fdf6e3", neon: "#0f0c29" };
+export const THEME_COLORS = { midnight: "#081226", dark: "#2a0a3d", parchment: "#fbf3df", neon: "#0a0820" };
 
 // --- Theme & display ---
 export function applyTheme(theme) {
-  if (!THEMES.includes(theme)) theme = "dark";
+  if (!THEMES.includes(theme)) theme = DEFAULT_THEME;
   document.body.classList.remove(...THEMES.map((t) => "theme-" + t));
   document.body.classList.add("theme-" + theme);
   const meta = document.querySelector("meta[name='theme-color']");
@@ -26,7 +27,7 @@ export function applyDisplayMode(mode) {
 export function applySettings() {
   const soundEnabled = loadSetting("soundEnabled", SOUND_DEFAULT);
   document.getElementById("sound-toggle").checked = soundEnabled;
-  document.getElementById("theme-select").value = applyTheme(loadSetting("theme", "dark"));
+  document.getElementById("theme-select").value = applyTheme(loadSetting("theme", DEFAULT_THEME));
   const showPercentages = loadSetting("showPercentages", true);
   document.getElementById("percent-toggle").checked = showPercentages;
   const displayMode = loadSetting("displayMode", "both");

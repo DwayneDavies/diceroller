@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dice Roller</title>
   <meta name="description" content="A dice roller for tabletop games: standard dice, presets, opposed rolls and roll odds." />
-  <meta name="theme-color" content="#2e003e" />
+  <meta name="theme-color" content="#081226" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
@@ -14,13 +14,13 @@
   <meta name="apple-mobile-web-app-title" content="Dice Roller" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="theme-dark">
+<body class="theme-midnight">
   <script>
     // Apply the saved theme before the page first paints, so it doesn't
     // flash the default theme on load. js/settings.js takes over after this.
     try {
       var savedTheme = JSON.parse(localStorage.getItem("theme"));
-      if (["dark", "parchment", "neon"].indexOf(savedTheme) >= 0) {
+      if (["midnight", "dark", "parchment", "neon"].indexOf(savedTheme) >= 0) {
         document.body.className = "theme-" + savedTheme;
       }
     } catch (e) {}
@@ -159,7 +159,8 @@
       <label><input type="checkbox" id="sound-toggle"> Enable Sounds</label>
       <label>Theme:
         <select id="theme-select">
-          <option value="dark">Dark</option>
+          <option value="midnight">Midnight</option>
+          <option value="dark">Violet</option>
           <option value="parchment">Parchment</option>
           <option value="neon">Neon</option>
         </select>
