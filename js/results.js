@@ -9,15 +9,17 @@ function dieValueClass(value, sides) {
   return "die-value";
 }
 
-function d20OutcomeBanner(rolls, result, sides, rollKind) {
+// The natural 1 / natural 20 banner looks at the d20 that counts: the only
+// die, or the kept one when rolling with advantage or disadvantage.
+export function d20OutcomeBanner(rolls, sides, rollKind, mode = "normal") {
   if (sides !== 20) return null;
 
   let face = null;
   if (rolls.length === 1) {
     face = rolls[0];
-  } else if (rolls.length === 2 && rollKind === "advantage") {
+  } else if (rolls.length === 2 && mode === "advantage") {
     face = Math.max(rolls[0], rolls[1]);
-  } else if (rolls.length === 2 && rollKind === "disadvantage") {
+  } else if (rolls.length === 2 && mode === "disadvantage") {
     face = Math.min(rolls[0], rolls[1]);
   }
   if (face !== 1 && face !== 20) return null;
@@ -32,23 +34,22 @@ function d20OutcomeBanner(rolls, result, sides, rollKind) {
 // --- Copy last roll ---
 let lastRoll = null;
 
-function copyLabel(labelText, rollKind) {
+function copyLabel(labelText, rollKind, mode) {
   const short = {
     attack: "Attack",
     initiative: "Initiative",
     saving: "Saving Throw",
-    advantage: "Advantage",
-    disadvantage: "Disadvantage",
   };
-  if (short[rollKind]) return short[rollKind];
-  return labelText.replace(/:$/, "").trim();
+  if (!short[rollKind]) return labelText.replace(/:$/, "").trim();
+  const suffix = mode === "advantage" ? " (Advantage)" : mode === "disadvantage" ? " (Disadvantage)" : "";
+  return short[rollKind] + suffix;
 }
 
 export function formatLastRollText() {
   if (!lastRoll) return null;
-  const { labelText, rolls, result, mod, banner, rollKind, breakdownRolls } =
+  const { labelText, rolls, result, mod, banner, rollKind, mode, breakdownRolls } =
     lastRoll;
-  const name = copyLabel(labelText, rollKind);
+  const name = copyLabel(labelText, rollKind, mode);
   const breakdown = formatBreakdown(breakdownRolls ?? rolls, mod);
   let text = `${name}: ${result} (${breakdown})`;
   if (banner) text += ` — ${banner}`;
@@ -121,7 +122,8 @@ export function addResultBox(labelText, rolls, result, typeClass = "", options =
     div.appendChild(die);
   });
 
-  const banner = d20OutcomeBanner(rolls, result, sides, rollKind);
+  const mode = options.mode || "normal";
+  const banner = d20OutcomeBanner(rolls, sides, rollKind, mode);
   if (banner) {
     const badge = document.createElement("span");
     badge.className =
@@ -143,6 +145,7 @@ export function addResultBox(labelText, rolls, result, typeClass = "", options =
     result,
     mod: options.mod || 0,
     rollKind,
+    mode,
     banner: banner ? banner.text : null,
     breakdownRolls: options.breakdownRolls,
   };

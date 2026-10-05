@@ -1,14 +1,11 @@
 import { rollDice, customRoll } from "./dice.js";
 import {
-  rollAdvantage,
-  rollDisadvantage,
   rollAbilityScore,
   rollInitiative,
   rollAttack,
   rollSavingThrow,
   renderPresets,
-  addPreset,
-  clearPresets,
+  initPresetEditor,
   initD20PresetModifiers,
 } from "./presets.js";
 import { findRollStats, redrawDistribution } from "./stats.js";
@@ -24,21 +21,18 @@ import { initResultsMenu } from "./results-menu.js";
 // Expose handlers used by inline onclick attributes in index.html
 Object.assign(window, {
   customRoll,
-  rollAdvantage,
-  rollDisadvantage,
   rollAbilityScore,
   rollInitiative,
   rollAttack,
   rollSavingThrow,
   findRollStats,
-  addPreset,
-  clearPresets,
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   applySettings();
   renderPresets();
   initD20PresetModifiers();
+  initPresetEditor();
   initSettingsModal();
   initResultsMenu();
 

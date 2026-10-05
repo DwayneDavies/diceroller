@@ -4,9 +4,11 @@ import { readExprInputs, shake } from "./dice.js";
 export function analyticStats(n, m, z) {
   const meanSingle = (1 + m) / 2;
   const varSingle = (m * m - 1) / 12;
+  const variance = n * varSingle;
   return {
     mean: n * meanSingle + z,
-    variance: n * varSingle
+    variance,
+    stdDev: Math.sqrt(variance),
   };
 }
 
@@ -111,10 +113,11 @@ export function findRollStats(event) {
 
   shake(event.target);
 
-  const { mean, variance } = analyticStats(times, sides, mod);
+  const { mean, variance, stdDev } = analyticStats(times, sides, mod);
   const summaryEl = document.getElementById("stats-summary");
   if (summaryEl) {
-    summaryEl.textContent = `Expected: ${mean.toFixed(2)}    Variance: ${variance.toFixed(2)}`;
+    summaryEl.textContent =
+      `Expected: ${mean.toFixed(2)}  |  Std dev: ${stdDev.toFixed(2)}  |  Variance: ${variance.toFixed(2)}`;
   }
 
   drawDistribution(times, sides, mod);

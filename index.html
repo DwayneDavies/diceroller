@@ -45,12 +45,14 @@
       <label>Attack mod: <input type="number" id="mod-attack" value="0"></label>
       <label>Initiative mod: <input type="number" id="mod-initiative" value="0"></label>
       <label>Save mod: <input type="number" id="mod-saving" value="0"></label>
-      <label>Advantage mod: <input type="number" id="mod-advantage" value="0"></label>
-      <label>Disadvantage mod: <input type="number" id="mod-disadvantage" value="0"></label>
     </div>
+    <fieldset class="roll-mode">
+      <legend>Roll mode for Attack, Initiative and Saving Throw</legend>
+      <label><input type="radio" name="roll-mode" value="disadvantage"><span>Disadvantage</span></label>
+      <label><input type="radio" name="roll-mode" value="normal" checked><span>Normal</span></label>
+      <label><input type="radio" name="roll-mode" value="advantage"><span>Advantage</span></label>
+    </fieldset>
     <div class="preset-row">
-      <button class="preset-btn advantage" onclick="rollAdvantage()">Advantage</button>
-      <button class="preset-btn disadvantage" onclick="rollDisadvantage()">Disadvantage</button>
       <button class="preset-btn ability" onclick="rollAbilityScore()">Ability Score</button>
       <button class="preset-btn initiative" onclick="rollInitiative()">Initiative</button>
       <button class="preset-btn attack" onclick="rollAttack()">Attack</button>
@@ -65,7 +67,7 @@
 
   <!-- Custom context menu -->
   <ul id="results-menu" class="context-menu">
-    <li id="copy-last-roll">Copy last roll</li>
+    <li id="copy-last-roll">Copy last roll (Alt+C)</li>
     <li id="clear-results">Clear Results</li>
   </ul>
 
@@ -104,13 +106,15 @@
       <!-- Preset Editor -->
       <h3>Preset Editor</h3>
       <div class="input-group">
-        <label>Name: <input type="text" id="preset-name"></label>
+        <label>Name: <input type="text" id="preset-name" maxlength="30" autocomplete="off"></label>
         <label>Times (x): <input type="number" id="preset-times" min="1" max="100" value="1"></label>
         <label>Sides (y): <input type="number" id="preset-sides" min="2" max="1000" value="6"></label>
         <label>Modifier (z): <input type="number" id="preset-mod" min="-100" max="100" value="0"></label>
       </div>
-      <button onclick="addPreset()">Add Preset</button>
-      <button onclick="clearPresets()">Clear All Presets</button>
+      <button type="button" id="add-preset">Add Preset</button>
+      <button type="button" id="clear-presets">Clear All Presets</button>
+      <p id="preset-message" class="preset-message" role="status" aria-live="polite"></p>
+      <ul id="preset-list" class="preset-list" aria-label="Saved presets"></ul>
 
       <!-- General Settings -->
       <h3>General Settings</h3>

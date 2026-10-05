@@ -44,3 +44,23 @@ test("formatBreakdown", () => {
   assert.equal(formatBreakdown([3], -1), "3-1");
   assert.equal(formatBreakdown([5], 0), "5");
 });
+
+import { rollD20 } from "../js/core.js";
+
+const fixedDice = (...values) => () => values.shift();
+
+test("rollD20 normal rolls one die", () => {
+  assert.deepEqual(rollD20("normal", fixedDice(14)), { rolls: [14], kept: 14 });
+  assert.deepEqual(rollD20(undefined, fixedDice(3)), { rolls: [3], kept: 3 });
+});
+
+test("rollD20 advantage keeps the higher, disadvantage the lower", () => {
+  assert.deepEqual(rollD20("advantage", fixedDice(4, 17)), { rolls: [4, 17], kept: 17 });
+  assert.deepEqual(rollD20("advantage", fixedDice(17, 4)), { rolls: [17, 4], kept: 17 });
+  assert.deepEqual(rollD20("disadvantage", fixedDice(4, 17)), { rolls: [4, 17], kept: 4 });
+  assert.deepEqual(rollD20("disadvantage", fixedDice(9, 9)), { rolls: [9, 9], kept: 9 });
+});
+
+test("rollD20 treats an unknown mode as normal", () => {
+  assert.equal(rollD20("bogus", fixedDice(8)).rolls.length, 1);
+});

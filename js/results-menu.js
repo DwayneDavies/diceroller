@@ -45,8 +45,12 @@ export function initResultsMenu() {
     menu.style.display = "none";
   });
 
+  // Alt+C copies the last roll. (Ctrl+Shift+C is the browser's "inspect
+  // element" shortcut, so it is left alone.) Skipped while typing, where
+  // Option+C types a character on a Mac.
   document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === "C") {
+    const typing = e.target.closest?.("input, textarea, select, [contenteditable]");
+    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.code === "KeyC" && !typing) {
       e.preventDefault();
       if (!hasLastRoll()) return;
       copyLastRoll().then((ok) => {

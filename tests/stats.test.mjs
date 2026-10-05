@@ -50,3 +50,10 @@ test("bucketDistribution leaves small distributions alone", () => {
   assert.equal(rows.length, 11);
   assert.equal(rows[0].label, "2");
 });
+
+test("analyticStats reports standard deviation as the root of the variance", () => {
+  const { variance, stdDev } = analyticStats(3, 6, 0);
+  assert.ok(Math.abs(variance - 8.75) < 1e-9);
+  assert.ok(Math.abs(stdDev - Math.sqrt(8.75)) < 1e-9);
+  assert.equal(analyticStats(1, 1, 5).stdDev, 0);
+});

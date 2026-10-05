@@ -10,6 +10,20 @@ export function rollMany(times, sides) {
   return rolls;
 }
 
+export const ROLL_MODES = ["disadvantage", "normal", "advantage"];
+
+// One d20, or two with the higher (advantage) or lower (disadvantage) kept.
+// `die` can be swapped out in tests to supply known rolls.
+export function rollD20(mode = "normal", die = rollDie) {
+  const first = die(20);
+  if (mode !== "advantage" && mode !== "disadvantage") {
+    return { rolls: [first], kept: first };
+  }
+  const second = die(20);
+  const kept = mode === "advantage" ? Math.max(first, second) : Math.min(first, second);
+  return { rolls: [first, second], kept };
+}
+
 export function sum(values) {
   return values.reduce((a, b) => a + b, 0);
 }
