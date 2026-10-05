@@ -114,7 +114,8 @@ for (const theme of THEMES) {
       assert.ok(v[`g-${die}`], `${theme} has no colour for ${die}`);
       const stops = hexes(v[`g-${die}`]);
       assert.equal(stops.length, 2);
-      checkPairs(theme, v, [[`text on ${die}`, solid(v, "on-die")[0], stops, AA]]);
+      assert.ok(v[`t-${die}`], `${theme} has no text colour for ${die}`);
+      checkPairs(theme, v, [[`text on ${die}`, solid(v, `t-${die}`)[0], stops, AA]]);
     }
   });
 
@@ -170,6 +171,18 @@ test("each theme's action buttons have their own colour, apart from the dice", (
     const v = themeVars(THEMES[i]);
     for (const d of dice) {
       assert.ok(deltaE(actions[i], hexes(v[`g-${d}`])[0]) >= 15, `${THEMES[i]}: action button is too close to ${d}`);
+    }
+  }
+});
+
+test("every die and action button class uses its own theme text colour", () => {
+  const map = { d3: "d3", d4: "d4", d6: "d6", d8: "d8", d10: "d10", d12: "d12", d20: "d20", d100: "d100",
+    ability: "d10", initiative: "d8", attack: "d4", saving: "d12" };
+  for (const [cls, die] of Object.entries(map)) {
+    for (const sel of [`.${cls}`, `.result-${cls}`]) {
+      const rule = css.match(new RegExp(`^\\${sel}\\s+\\{([^}]*)\\}`, "m"));
+      assert.ok(rule, `no CSS rule for ${sel}`);
+      assert.ok(rule[1].includes(`var(--g-${die})`) && rule[1].includes(`var(--t-${die})`), `${sel} should use --g-${die} and --t-${die}`);
     }
   }
 });
