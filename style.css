@@ -305,6 +305,18 @@ details[open] summary::before {
   content: "▼ ";
 }
 
+/* A collapsible inside another panel (Versus Roll inside Preset Actions) */
+details.nested-details {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--rule);
+}
+
+details.nested-details > summary { font-size: 1.15em; }
+
 /* Input groups */
 .input-group label {
   flex: 1 1 30%;
@@ -377,7 +389,8 @@ details button {
   box-shadow: 0 6px 12px var(--shadow);
 }
 
-details button:hover {
+/* Dice and preset buttons keep their own colors on hover */
+details button:not(.dice-btn):not(.preset-btn):hover {
   background: linear-gradient(145deg, var(--accent-hover), var(--accent));
   box-shadow: 0 8px 14px var(--shadow);
 }

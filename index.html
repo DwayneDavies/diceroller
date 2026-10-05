@@ -53,6 +53,34 @@
       <button class="preset-btn saving" onclick="rollSavingThrow()">Saving Throw</button>
       <!-- Custom presets will be injected here -->
     </div>
+
+    <!-- Versus (opposed) Roll -->
+    <details class="nested-details">
+      <summary>Versus Roll (opposed)</summary>
+      <div class="versus-form">
+        <fieldset class="input-group">
+          <legend>Side A</legend>
+          <label>Name <input type="text" id="versus-name-a" maxlength="20" autocomplete="off" value="You"></label>
+          <label>Modifier <input type="number" id="versus-mod-a" min="-100" max="100" value="0"></label>
+        </fieldset>
+        <fieldset class="input-group">
+          <legend>Side B</legend>
+          <label>Name <input type="text" id="versus-name-b" maxlength="20" autocomplete="off" value="Opponent"></label>
+          <label>Modifier <input type="number" id="versus-mod-b" min="-100" max="100" value="0"></label>
+        </fieldset>
+      </div>
+      <div class="input-group">
+        <label>Die sides (both roll the same die): <input type="number" id="versus-sides" min="2" max="1000" value="20"></label>
+        <label>If totals are equal:
+          <select id="versus-tie">
+            <option value="tie">Call it a tie</option>
+            <option value="a">Side A wins</option>
+            <option value="b">Side B wins</option>
+          </select>
+        </label>
+      </div>
+      <button type="button" id="roll-versus">Roll Versus</button>
+    </details>
   </details>
 
   <!-- Results Log -->
@@ -74,34 +102,6 @@
       <label>Modifier (z): <input type="number" id="mod" min="-100" max="100" value="0"></label>
     </div>
     <button onclick="customRoll(event)">Roll Custom</button>
-  </details>
-
-  <!-- Versus (opposed) Roll -->
-  <details>
-    <summary>Versus Roll (opposed)</summary>
-    <div class="versus-form">
-      <fieldset class="input-group">
-        <legend>Side A</legend>
-        <label>Name <input type="text" id="versus-name-a" maxlength="20" autocomplete="off" value="You"></label>
-        <label>Modifier <input type="number" id="versus-mod-a" min="-100" max="100" value="0"></label>
-      </fieldset>
-      <fieldset class="input-group">
-        <legend>Side B</legend>
-        <label>Name <input type="text" id="versus-name-b" maxlength="20" autocomplete="off" value="Opponent"></label>
-        <label>Modifier <input type="number" id="versus-mod-b" min="-100" max="100" value="0"></label>
-      </fieldset>
-    </div>
-    <div class="input-group">
-      <label>Die sides (both roll the same die): <input type="number" id="versus-sides" min="2" max="1000" value="20"></label>
-      <label>If totals are equal:
-        <select id="versus-tie">
-          <option value="tie">Call it a tie</option>
-          <option value="a">Side A wins</option>
-          <option value="b">Side B wins</option>
-        </select>
-      </label>
-    </div>
-    <button type="button" id="roll-versus">Roll Versus</button>
   </details>
 
   <!-- Find Roll Stats -->
