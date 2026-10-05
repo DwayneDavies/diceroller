@@ -17,6 +17,9 @@ const VOICES = {
   custom: { bounces: 7, pitch: 2400 },
 };
 
+// Sound starts off; players opt in from Settings.
+export const SOUND_DEFAULT = false;
+
 const noiseBuffers = new WeakMap();
 
 function noiseFor(ac) {
@@ -88,7 +91,7 @@ function getContext() {
 }
 
 export function playSoundForDie(sides) {
-  if (!loadSetting("soundEnabled", true)) return;
+  if (!loadSetting("soundEnabled", SOUND_DEFAULT)) return;
   try {
     const ac = getContext();
     if (ac) scheduleRattle(ac, ac.destination, sides, ac.currentTime + 0.01);

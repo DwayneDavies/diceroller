@@ -6,12 +6,22 @@
   <title>Dice Roller</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="theme-dark">
+  <script>
+    // Apply the saved theme before the page first paints, so it doesn't
+    // flash the default theme on load. js/settings.js takes over after this.
+    try {
+      var savedTheme = JSON.parse(localStorage.getItem("theme"));
+      if (["dark", "parchment", "neon"].indexOf(savedTheme) >= 0) {
+        document.body.className = "theme-" + savedTheme;
+      }
+    } catch (e) {}
+  </script>
 
   <h1>🎲 Dice Roller</h1>
 
   <!-- Gear icon -->
-  <div id="settings-gear" class="gear-icon">⚙️</div>
+  <button type="button" id="settings-gear" class="gear-icon" aria-label="Settings" title="Settings">⚙️</button>
 
   <!-- Dice Buttons Collapsible -->
   <details open>
@@ -89,7 +99,7 @@
   <div id="settings-popup" class="settings-popup hidden">
     <div class="settings-content">
       <h2>Settings</h2>
-      <button id="close-settings" class="close-btn">✖</button>
+      <button type="button" id="close-settings" class="close-btn" aria-label="Close settings">✕</button>
 
       <!-- Preset Editor -->
       <h3>Preset Editor</h3>

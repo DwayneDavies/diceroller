@@ -56,9 +56,25 @@ function formatCount(count) {
 
 const MAX_CHART_ROWS = 100;
 
+// The last chart drawn, so it can be repainted when the theme or the
+// percentages setting changes.
+let lastChart = null;
+
+export function redrawDistribution() {
+  if (lastChart) drawDistribution(...lastChart);
+}
+
+function themeColor(el, name, fallback) {
+  return getComputedStyle(el).getPropertyValue(name).trim() || fallback;
+}
+
 export function drawDistribution(times, sides, mod) {
   const canvas = document.getElementById("stats-chart");
+  if (!canvas) return;
+  lastChart = [times, sides, mod];
   const ctx = canvas.getContext("2d");
+  const textColor = themeColor(canvas, "--chart-text", "#fff");
+  const barColor = themeColor(canvas, "--chart-bar", "#ffd700");
   const rows = bucketDistribution(diceSumDistribution(times, sides, mod), MAX_CHART_ROWS);
   if (rows.length === 0) return;
   const maxP = Math.max(...rows.map(d => d.p));
@@ -81,11 +97,11 @@ export function drawDistribution(times, sides, mod) {
   rows.forEach((d, i) => {
     const y = i * rowHeight + rowHeight/2 + 20;
     const barLen = (d.p / maxP) * barSpace;
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = textColor;
     ctx.fillText(d.label + ":", 5, y);
-    ctx.fillStyle = "#ffd700";
+    ctx.fillStyle = barColor;
     ctx.fillRect(barStart, y - 8, barLen, 16);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = textColor;
     ctx.fillText(showPercentages ? (d.p * 100).toFixed(2) + "%" : formatCount(d.count), barStart + 5 + barLen, y);
   });
 }

@@ -11,7 +11,7 @@ import {
   clearPresets,
   initD20PresetModifiers,
 } from "./presets.js";
-import { findRollStats } from "./stats.js";
+import { findRollStats, redrawDistribution } from "./stats.js";
 import {
   applySettings,
   initSettingsModal,
@@ -65,5 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("percent-toggle").addEventListener("change", (e) => {
     saveSetting("showPercentages", e.target.checked);
+    redrawDistribution();
   });
 });
