@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dice Roller</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>🎲 Dice Roller</h1>
+
+  <!-- Gear icon -->
+  <div id="settings-gear" class="gear-icon">⚙️</div>
+
+  <!-- Dice Buttons Collapsible -->
+  <details open>
+    <summary>Dice Buttons</summary>
+    <div class="dice-row">
+      <button class="dice-btn d3" onclick="rollDice(3,this)" title="d3">d3</button>
+      <button class="dice-btn d4" onclick="rollDice(4,this)" title="d4">d4</button>
+      <button class="dice-btn d6" onclick="rollDice(6,this)" title="d6">d6</button>
+      <button class="dice-btn d8" onclick="rollDice(8,this)" title="d8">d8</button>
+      <button class="dice-btn d10" onclick="rollDice(10,this)" title="d10">d10</button>
+      <button class="dice-btn d12" onclick="rollDice(12,this)" title="d12">d12</button>
+      <button class="dice-btn d20" onclick="rollDice(20,this)" title="d20">d20</button>
+      <button class="dice-btn d100" onclick="rollDice(100,this)" title="d100">d100</button>
+    </div>
+  </details>
+
+  <!-- Preset Action Buttons Collapsible -->
+  <details open>
+    <summary>Preset Actions</summary>
+    <div class="d20-modifiers input-group">
+      <label>Attack mod: <input type="number" id="mod-attack" value="0"></label>
+      <label>Initiative mod: <input type="number" id="mod-initiative" value="0"></label>
+      <label>Save mod: <input type="number" id="mod-saving" value="0"></label>
+      <label>Advantage mod: <input type="number" id="mod-advantage" value="0"></label>
+      <label>Disadvantage mod: <input type="number" id="mod-disadvantage" value="0"></label>
+    </div>
+    <div class="preset-row">
+      <button class="preset-btn advantage" onclick="rollAdvantage()">Advantage</button>
+      <button class="preset-btn disadvantage" onclick="rollDisadvantage()">Disadvantage</button>
+      <button class="preset-btn ability" onclick="rollAbilityScore()">Ability Score</button>
+      <button class="preset-btn initiative" onclick="rollInitiative()">Initiative</button>
+      <button class="preset-btn attack" onclick="rollAttack()">Attack</button>
+      <button class="preset-btn saving" onclick="rollSavingThrow()">Saving Throw</button>
+      <!-- Custom presets will be injected here -->
+    </div>
+  </details>
+
+  <!-- Results Log -->
+  <div id="results"></div>
+  <p id="copy-last-hint" class="copy-last-hint hidden">Last roll copied to clipboard.</p>
+
+  <!-- Custom context menu -->
+  <ul id="results-menu" class="context-menu">
+    <li id="copy-last-roll">Copy last roll</li>
+    <li id="clear-results">Clear Results</li>
+  </ul>
+
+  <!-- Custom Roll -->
+  <details>
+    <summary>Custom Roll (xdy + z)</summary>
+    <div class="input-group">
+      <label>Times (x): <input type="number" id="times" value="1"></label>
+      <label>Sides (y): <input type="number" id="sides" value="6"></label>
+      <label>Modifier (z): <input type="number" id="mod" value="0"></label>
+    </div>
+    <button onclick="customRoll(event)">Roll Custom</button>
+  </details>
+
+  <!-- Find Roll Stats -->
+  <details>
+    <summary>Find Roll Stats (xdy + z)</summary>
+    <div class="input-group">
+      <label>Times (x): <input type="number" id="stat-times" value="1"></label>
+      <label>Sides (y): <input type="number" id="stat-sides" value="6"></label>
+      <label>Modifier (z): <input type="number" id="stat-mod" value="0"></label>
+    </div>
+    <button onclick="findRollStats(event)">Find Stats</button>
+    <div id="stats-container">
+      <div id="stats-summary"></div>
+      <canvas id="stats-chart"></canvas>
+    </div>
+  </details>
+
+  <!-- Settings Popup Modal -->
+  <div id="settings-popup" class="settings-popup hidden">
+    <div class="settings-content">
+      <h2>Settings</h2>
+      <button id="close-settings" class="close-btn">✖</button>
+
+      <!-- Preset Editor -->
+      <h3>Preset Editor</h3>
+      <div class="input-group">
+        <label>Name: <input type="text" id="preset-name"></label>
+        <label>Times (x): <input type="number" id="preset-times" value="1"></label>
+        <label>Sides (y): <input type="number" id="preset-sides" value="6"></label>
+        <label>Modifier (z): <input type="number" id="preset-mod" value="0"></label>
+      </div>
+      <button onclick="addPreset()">Add Preset</button>
+      <button onclick="clearPresets()">Clear All Presets</button>
+
+      <!-- General Settings -->
+      <h3>General Settings</h3>
+      <label><input type="checkbox" id="sound-toggle"> Enable Sounds</label>
+      <label>Theme:
+        <select id="theme-select">
+          <option value="dark">Dark</option>
+          <option value="parchment">Parchment</option>
+          <option value="neon">Neon</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="percent-toggle"> Show Percentages in Stats</label>
+
+      <!-- Display Options -->
+      <h3>Display Options</h3>
+      <label><input type="radio" name="display-mode" value="both" checked> Show Both</label>
+      <label><input type="radio" name="display-mode" value="dice"> Dice Only</label>
+      <label><input type="radio" name="display-mode" value="presets"> Presets Only</label>
+    </div>
+  </div>
+
+  <!-- Sounds -->
+  <audio id="sound-d3" src="sounds/d3.mp3" preload="auto"></audio>
+  <audio id="sound-d4" src="sounds/d4.mp3" preload="auto"></audio>
+  <audio id="sound-d6" src="sounds/d6.mp3" preload="auto"></audio>
+  <audio id="sound-d8" src="sounds/d8.mp3" preload="auto"></audio>
+  <audio id="sound-d10" src="sounds/d10.mp3" preload="auto"></audio>
+  <audio id="sound-d12" src="sounds/d12.mp3" preload="auto"></audio>
+  <audio id="sound-d20" src="sounds/d20.mp3" preload="auto"></audio>
+  <audio id="sound-d100" src="sounds/d100.mp3" preload="auto"></audio>
+  <audio id="sound-custom" src="sounds/custom.mp3" preload="auto"></audio>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
