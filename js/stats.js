@@ -1,4 +1,5 @@
-import { playSoundForDie, loadSetting } from "./settings.js";
+import { playSoundForDie } from "./sound.js";
+import { loadSetting } from "./storage.js";
 
 export function analyticStats(n, m, z) {
   const meanSingle = (1 + m) / 2;

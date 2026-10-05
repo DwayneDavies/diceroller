@@ -15,10 +15,10 @@ import { findRollStats } from "./stats.js";
 import {
   applySettings,
   initSettingsModal,
-  saveSetting,
   applyDisplayMode,
   applyTheme,
 } from "./settings.js";
+import { saveSetting } from "./storage.js";
 import { initResultsMenu } from "./results-menu.js";
 
 // Expose handlers used by inline onclick attributes in index.html

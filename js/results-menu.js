@@ -3,7 +3,7 @@ import {
   showCopyToast,
   hasLastRoll,
   clearResults,
-} from "./settings.js";
+} from "./results.js";
 
 export function initResultsMenu() {
   const resultsBox = document.getElementById("results");

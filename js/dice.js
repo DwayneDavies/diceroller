@@ -1,13 +1,30 @@
-import { playSoundForDie, addResultBox } from './settings.js';
+import { rollDie, rollMany, sum } from "./core.js";
+import { playSoundForDie } from "./sound.js";
+import { addResultBox } from "./results.js";
+
+export function shake(btn) {
+  if (!btn) return;
+  btn.classList.add("shake");
+  setTimeout(() => btn.classList.remove("shake"), 400);
+}
 
 export function rollDice(sides, btn) {
   playSoundForDie(sides);
-  btn.classList.add("shake");
-  setTimeout(() => btn.classList.remove("shake"), 400);
+  shake(btn);
 
-  const roll = Math.floor(Math.random() * sides) + 1;
+  const roll = rollDie(sides);
   const opts = sides === 20 ? { sides: 20, rollKind: "plain" } : {};
   addResultBox(`Rolled d${sides}:`, [roll], roll, `result-d${sides}`, opts);
+}
+
+// Rolls xdy + z and logs it; shared by the custom roll and saved presets.
+export function rollExpression(label, times, sides, mod) {
+  const rolls = rollMany(times, sides);
+  const opts =
+    sides === 20
+      ? { sides: 20, rollKind: "plain", mod }
+      : { mod };
+  addResultBox(label, rolls, sum(rolls) + mod, `result-d${sides}`, opts);
 }
 
 export function customRoll(event) {
@@ -16,25 +33,6 @@ export function customRoll(event) {
   const sides = parseInt(document.getElementById("sides").value) || 6;
   const mod = parseInt(document.getElementById("mod").value) || 0;
 
-  const btn = event.target;
-  btn.classList.add("shake");
-  setTimeout(() => btn.classList.remove("shake"), 400);
-
-  let rolls = [], total = 0;
-  for (let i = 0; i < times; i++) {
-    const r = Math.floor(Math.random() * sides) + 1;
-    total += r; rolls.push(r);
-  }
-
-  const opts =
-    sides === 20
-      ? { sides: 20, rollKind: "plain", mod }
-      : { mod };
-  addResultBox(
-    `${times}d${sides}${mod ? `+${mod}` : ""}:`,
-    rolls,
-    total + mod,
-    `result-d${sides}`,
-    opts
-  );
+  shake(event.target);
+  rollExpression(`${times}d${sides}${mod ? `+${mod}` : ""}:`, times, sides, mod);
 }

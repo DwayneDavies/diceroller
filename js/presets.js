@@ -1,4 +1,8 @@
-import { playSoundForDie, addResultBox, loadSetting, saveSetting } from "./settings.js";
+import { rollDie, rollMany, sum } from "./core.js";
+import { playSoundForDie } from "./sound.js";
+import { addResultBox } from "./results.js";
+import { loadSetting, saveSetting, loadPresets, savePresets, clearStoredPresets } from "./storage.js";
+import { rollExpression } from "./dice.js";
 
 const D20_MOD_IDS = {
   attack: "mod-attack",
@@ -48,8 +52,8 @@ function d20Opts(rollKind, mod) {
 export function rollAdvantage() {
   playSoundForDie(20);
   const mod = getD20PresetMod("advantage");
-  const r1 = Math.floor(Math.random() * 20) + 1;
-  const r2 = Math.floor(Math.random() * 20) + 1;
+  const r1 = rollDie(20);
+  const r2 = rollDie(20);
   const kept = Math.max(r1, r2);
   addResultBox("Advantage:", [r1, r2], kept + mod, "result-advantage", {
     ...d20Opts("advantage", mod),
@@ -60,8 +64,8 @@ export function rollAdvantage() {
 export function rollDisadvantage() {
   playSoundForDie(20);
   const mod = getD20PresetMod("disadvantage");
-  const r1 = Math.floor(Math.random() * 20) + 1;
-  const r2 = Math.floor(Math.random() * 20) + 1;
+  const r1 = rollDie(20);
+  const r2 = rollDie(20);
   const kept = Math.min(r1, r2);
   addResultBox("Disadvantage:", [r1, r2], kept + mod, "result-disadvantage", {
     ...d20Opts("disadvantage", mod),
@@ -71,10 +75,9 @@ export function rollDisadvantage() {
 
 export function rollAbilityScore() {
   playSoundForDie(6);
-  let rolls = [];
-  for (let i=0;i<4;i++) rolls.push(Math.floor(Math.random()*6)+1);
+  const rolls = rollMany(4, 6);
   const sorted = [...rolls].sort((a, b) => a - b);
-  const total = sorted[1] + sorted[2] + sorted[3];
+  const total = sum(sorted.slice(1));
   addResultBox("Ability Score (best of 4d6):", rolls, total, "result-ability", {
     breakdownRolls: sorted.slice(1),
   });
@@ -83,32 +86,25 @@ export function rollAbilityScore() {
 export function rollInitiative() {
   playSoundForDie(20);
   const mod = getD20PresetMod("initiative");
-  const roll = Math.floor(Math.random() * 20) + 1;
+  const roll = rollDie(20);
   addResultBox("Initiative:", [roll], roll + mod, "result-initiative", d20Opts("initiative", mod));
 }
 
 export function rollAttack() {
   playSoundForDie(20);
   const mod = getD20PresetMod("attack");
-  const roll = Math.floor(Math.random() * 20) + 1;
+  const roll = rollDie(20);
   addResultBox("Attack Roll:", [roll], roll + mod, "result-attack", d20Opts("attack", mod));
 }
 
 export function rollSavingThrow() {
   playSoundForDie(20);
   const mod = getD20PresetMod("saving");
-  const roll = Math.floor(Math.random() * 20) + 1;
+  const roll = rollDie(20);
   addResultBox("Saving Throw:", [roll], roll + mod, "result-saving", d20Opts("saving", mod));
 }
 
 // Preset editor
-export function loadPresets() {
-  const val = localStorage.getItem("presets");
-  return val ? JSON.parse(val) : [];
-}
-export function savePresets(presets) {
-  localStorage.setItem("presets", JSON.stringify(presets));
-}
 export function addPreset() {
   const name = document.getElementById("preset-name").value.trim();
   const times = parseInt(document.getElementById("preset-times").value) || 1;
@@ -121,7 +117,7 @@ export function addPreset() {
   renderPresets();
 }
 export function clearPresets() {
-  localStorage.removeItem("presets");
+  clearStoredPresets();
   renderPresets();
 }
 export function renderPresets() {
@@ -134,16 +130,7 @@ export function renderPresets() {
     btn.textContent = p.name;
     btn.onclick = () => {
       playSoundForDie(p.sides);
-      let rolls = [], total = 0;
-      for (let i=0;i<p.times;i++) {
-        const r = Math.floor(Math.random()*p.sides)+1;
-        total += r; rolls.push(r);
-      }
-      const opts =
-        p.sides === 20
-          ? { sides: 20, rollKind: "plain", mod: p.mod }
-          : { mod: p.mod };
-      addResultBox(`${p.name}:`, rolls, total + p.mod, `result-d${p.sides}`, opts);
+      rollExpression(`${p.name}:`, p.times, p.sides, p.mod);
     };
     container.appendChild(btn);
   });
