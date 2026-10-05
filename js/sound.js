@@ -16,5 +16,9 @@ const SOUND_IDS = {
 export function playSoundForDie(sides) {
   if (!loadSetting("soundEnabled", true)) return;
   const sound = document.getElementById(SOUND_IDS[sides] || "sound-d6");
-  if (sound) { sound.currentTime = 0; sound.play(); }
+  if (!sound) return;
+  sound.currentTime = 0;
+  // Missing or unsupported files reject; a roll should never fail over sound.
+  const playing = sound.play();
+  if (playing) playing.catch(() => {});
 }

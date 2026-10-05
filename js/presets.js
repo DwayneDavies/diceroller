@@ -2,7 +2,7 @@ import { rollDie, rollMany, sum } from "./core.js";
 import { playSoundForDie } from "./sound.js";
 import { addResultBox } from "./results.js";
 import { loadSetting, saveSetting, loadPresets, savePresets, clearStoredPresets } from "./storage.js";
-import { rollExpression } from "./dice.js";
+import { rollExpression, readExprInputs } from "./dice.js";
 
 const D20_MOD_IDS = {
   attack: "mod-attack",
@@ -107,10 +107,8 @@ export function rollSavingThrow() {
 // Preset editor
 export function addPreset() {
   const name = document.getElementById("preset-name").value.trim();
-  const times = parseInt(document.getElementById("preset-times").value) || 1;
-  const sides = parseInt(document.getElementById("preset-sides").value) || 6;
-  const mod = parseInt(document.getElementById("preset-mod").value) || 0;
   if (!name) return alert("Preset name required!");
+  const { times, sides, mod } = readExprInputs("preset-times", "preset-sides", "preset-mod");
   const presets = loadPresets();
   presets.push({ name, times, sides, mod });
   savePresets(presets);

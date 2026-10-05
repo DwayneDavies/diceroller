@@ -23,7 +23,6 @@ import { initResultsMenu } from "./results-menu.js";
 
 // Expose handlers used by inline onclick attributes in index.html
 Object.assign(window, {
-  rollDice,
   customRoll,
   rollAdvantage,
   rollDisadvantage,
@@ -42,6 +41,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initD20PresetModifiers();
   initSettingsModal();
   initResultsMenu();
+
+  document.querySelector(".dice-row").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-sides]");
+    if (btn) rollDice(Number(btn.dataset.sides), btn);
+  });
 
   document.querySelectorAll("input[name='display-mode']").forEach((r) => {
     r.addEventListener("change", (e) => {

@@ -20,3 +20,23 @@ export function formatBreakdown(rolls, mod) {
   else if (mod < 0) s += mod;
   return s;
 }
+
+// Allowed ranges for xdy + z inputs; index.html mirrors these as min/max.
+export const LIMITS = {
+  times: [1, 100],
+  sides: [2, 1000],
+  mod: [-100, 100],
+};
+
+export function clampInt(value, defaultValue, min, max) {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n)) return defaultValue;
+  return Math.min(Math.max(n, min), max);
+}
+
+export function formatExpr(times, sides, mod) {
+  let s = `${times}d${sides}`;
+  if (mod > 0) s += `+${mod}`;
+  else if (mod < 0) s += mod;
+  return s;
+}

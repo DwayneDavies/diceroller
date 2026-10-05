@@ -1,4 +1,4 @@
-import { rollDie, rollMany, sum } from "./core.js";
+import { rollDie, rollMany, sum, clampInt, formatExpr, LIMITS } from "./core.js";
 import { playSoundForDie } from "./sound.js";
 import { addResultBox } from "./results.js";
 
@@ -6,6 +6,22 @@ export function shake(btn) {
   if (!btn) return;
   btn.classList.add("shake");
   setTimeout(() => btn.classList.remove("shake"), 400);
+}
+
+// Reads x, y and z from three number inputs, clamped to LIMITS. A value
+// outside the range is snapped back so the input shows what was rolled.
+export function readExprInputs(timesId, sidesId, modId) {
+  const read = (id, def, [min, max]) => {
+    const el = document.getElementById(id);
+    const v = clampInt(el.value, def, min, max);
+    el.value = v;
+    return v;
+  };
+  return {
+    times: read(timesId, 1, LIMITS.times),
+    sides: read(sidesId, 6, LIMITS.sides),
+    mod: read(modId, 0, LIMITS.mod),
+  };
 }
 
 export function rollDice(sides, btn) {
@@ -29,10 +45,8 @@ export function rollExpression(label, times, sides, mod) {
 
 export function customRoll(event) {
   playSoundForDie("custom");
-  const times = parseInt(document.getElementById("times").value) || 1;
-  const sides = parseInt(document.getElementById("sides").value) || 6;
-  const mod = parseInt(document.getElementById("mod").value) || 0;
+  const { times, sides, mod } = readExprInputs("times", "sides", "mod");
 
   shake(event.target);
-  rollExpression(`${times}d${sides}${mod ? `+${mod}` : ""}:`, times, sides, mod);
+  rollExpression(`${formatExpr(times, sides, mod)}:`, times, sides, mod);
 }

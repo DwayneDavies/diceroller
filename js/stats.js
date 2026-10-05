@@ -1,5 +1,6 @@
 import { playSoundForDie } from "./sound.js";
 import { loadSetting } from "./storage.js";
+import { readExprInputs, shake } from "./dice.js";
 
 export function analyticStats(n, m, z) {
   const meanSingle = (1 + m) / 2;
@@ -92,13 +93,9 @@ export function drawDistribution(times, sides, mod) {
 
 export function findRollStats(event) {
   playSoundForDie("stats");
-  const times = parseInt(document.getElementById("stat-times").value) || 1;
-  const sides = parseInt(document.getElementById("stat-sides").value) || 6;
-  const mod = parseInt(document.getElementById("stat-mod").value) || 0;
+  const { times, sides, mod } = readExprInputs("stat-times", "stat-sides", "stat-mod");
 
-  const btn = event.target;
-  btn.classList.add("shake");
-  setTimeout(() => btn.classList.remove("shake"), 400);
+  shake(event.target);
 
   const { mean, variance } = analyticStats(times, sides, mod);
   const summaryEl = document.getElementById("stats-summary");

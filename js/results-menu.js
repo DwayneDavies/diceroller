@@ -17,12 +17,16 @@ export function initResultsMenu() {
     copyItem.classList.toggle("menu-disabled", !hasLastRoll());
   }
 
+  function openMenu(pageX, pageY) {
+    updateCopyMenuItem();
+    menu.style.top = pageY + "px";
+    menu.style.left = pageX + "px";
+    menu.style.display = "block";
+  }
+
   resultsBox.addEventListener("contextmenu", (e) => {
     e.preventDefault();
-    updateCopyMenuItem();
-    menu.style.top = e.pageY + "px";
-    menu.style.left = e.pageX + "px";
-    menu.style.display = "block";
+    openMenu(e.pageX, e.pageY);
   });
 
   document.addEventListener("click", () => {
@@ -51,17 +55,28 @@ export function initResultsMenu() {
     }
   });
 
-  let pressTimer;
-  resultsBox.addEventListener("touchstart", () => {
+  // Long-press opens the menu on touch screens. Moving the finger (scrolling)
+  // cancels it, and the click that follows the press is swallowed so the
+  // document click handler doesn't close the menu straight away.
+  let pressTimer = null;
+  let longPressed = false;
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  };
+  resultsBox.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    longPressed = false;
+    cancelPress();
     pressTimer = setTimeout(() => {
-      resultsBox.dispatchEvent(
-        new MouseEvent("contextmenu", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        })
-      );
+      longPressed = true;
+      openMenu(touch.pageX, touch.pageY);
     }, 600);
+  }, { passive: true });
+  resultsBox.addEventListener("touchmove", cancelPress, { passive: true });
+  resultsBox.addEventListener("touchcancel", cancelPress);
+  resultsBox.addEventListener("touchend", (e) => {
+    cancelPress();
+    if (longPressed) e.preventDefault();
   });
-  resultsBox.addEventListener("touchend", () => clearTimeout(pressTimer));
 }
