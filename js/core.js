@@ -102,3 +102,14 @@ export function sanitizeVersusSettings(raw) {
     tie: TIE_RULES.includes(r.tie) ? r.tie : d.tie,
   };
 }
+
+// One-line summary of the Attack / Initiative / Save modifiers, shown on the
+// collapsed "Modifiers" panel so non-zero values are never out of sight.
+export function describeModifiers({ attack = 0, initiative = 0, saving = 0 } = {}) {
+  const signed = (n) => (n > 0 ? `+${n}` : String(n));
+  const parts = [];
+  if (attack) parts.push(`Attack ${signed(attack)}`);
+  if (initiative) parts.push(`Initiative ${signed(initiative)}`);
+  if (saving) parts.push(`Save ${signed(saving)}`);
+  return parts.length ? `Modifiers: ${parts.join(" · ")}` : "Modifiers (none set)";
+}

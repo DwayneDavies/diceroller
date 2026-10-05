@@ -1,4 +1,4 @@
-import { rollDie, rollMany, formatExpr, sum } from "./core.js";
+import { rollDie, rollMany, formatExpr, sum, describeModifiers } from "./core.js";
 import { playSoundForDie } from "./sound.js";
 import { addResultBox } from "./results.js";
 import {
@@ -24,12 +24,21 @@ export function getD20PresetMod(key) {
   return parseInt(mods[key], 10) || 0;
 }
 
+export function updateModifiersSummary() {
+  const el = document.getElementById("modifiers-summary");
+  if (!el) return;
+  const mods = {};
+  for (const key of Object.keys(D20_MOD_IDS)) mods[key] = getD20PresetMod(key);
+  el.textContent = describeModifiers(mods);
+}
+
 export function loadD20PresetMods() {
   const mods = loadSetting("d20PresetMods", {});
   for (const [key, id] of Object.entries(D20_MOD_IDS)) {
     const el = document.getElementById(id);
     if (el) el.value = mods[key] ?? 0;
   }
+  updateModifiersSummary();
 }
 
 export function saveD20PresetModsFromInputs() {
@@ -47,6 +56,7 @@ export function initD20PresetModifiers() {
     const el = document.getElementById(id);
     if (!el) continue;
     el.addEventListener("change", saveD20PresetModsFromInputs);
+    el.addEventListener("input", updateModifiersSummary);
   }
 }
 

@@ -13,13 +13,11 @@ export function applyTheme(theme) {
   redrawDistribution();
   return theme;
 }
+// "Dice only" hides the whole Preset Actions panel (modifiers, presets and
+// Versus Roll); "Presets only" hides the Dice Buttons panel.
 export function applyDisplayMode(mode) {
-  const diceRow = document.querySelector(".dice-row");
-  const presetRow = document.querySelector(".preset-row");
-  diceRow.classList.remove("hidden");
-  presetRow.classList.remove("hidden");
-  if (mode === "dice") presetRow.classList.add("hidden");
-  else if (mode === "presets") diceRow.classList.add("hidden");
+  document.getElementById("dice-panel").classList.toggle("hidden", mode === "presets");
+  document.getElementById("preset-panel").classList.toggle("hidden", mode === "dice");
 }
 export function applySettings() {
   const soundEnabled = loadSetting("soundEnabled", SOUND_DEFAULT);
@@ -35,14 +33,62 @@ export function applySettings() {
 }
 
 // --- Settings modal ---
+const FOCUSABLE =
+  "button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex='-1'])";
+
 export function initSettingsModal() {
   const gear = document.getElementById("settings-gear");
   const popup = document.getElementById("settings-popup");
   const closeBtn = document.getElementById("close-settings");
+  const dialog = popup.querySelector(".settings-content");
+  let opener = null;
 
-  gear.addEventListener("click", () => popup.classList.remove("hidden"));
-  closeBtn.addEventListener("click", () => popup.classList.add("hidden"));
+  const isOpen = () => !popup.classList.contains("hidden");
+
+  function open() {
+    opener = document.activeElement;
+    popup.classList.remove("hidden");
+    closeBtn.focus();
+  }
+
+  function close() {
+    popup.classList.add("hidden");
+    // Put keyboard focus back where it was before the dialog opened.
+    (opener && opener.isConnected ? opener : gear).focus();
+  }
+
+  gear.addEventListener("click", open);
+  closeBtn.addEventListener("click", close);
   popup.addEventListener("click", (e) => {
-    if (e.target === popup) popup.classList.add("hidden");
+    if (e.target === popup) close();
+  });
+
+  // Safety net: if focus lands outside the open dialog, bring it back.
+  document.addEventListener("focusin", (e) => {
+    if (isOpen() && !dialog.contains(e.target)) closeBtn.focus();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (!isOpen()) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "Tab") {
+      // Keep Tab / Shift+Tab inside the dialog while it is open.
+      // Tab only stops on the checked radio of a group, so count just those.
+      const items = [...dialog.querySelectorAll(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null && (el.type !== "radio" || el.checked)
+      );
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   });
 }

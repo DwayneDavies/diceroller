@@ -137,3 +137,12 @@ test("sanitizeVersusSettings keeps good values and repairs bad ones", () => {
   assert.equal(bad.tie, "tie");
   assert.equal(sanitizeVersusSettings({ nameA: "x".repeat(60) }).nameA.length, 20);
 });
+
+import { describeModifiers } from "../js/core.js";
+
+test("describeModifiers lists only the non-zero modifiers", () => {
+  assert.equal(describeModifiers({ attack: 0, initiative: 0, saving: 0 }), "Modifiers (none set)");
+  assert.equal(describeModifiers(), "Modifiers (none set)");
+  assert.equal(describeModifiers({ attack: 5, initiative: 0, saving: -1 }), "Modifiers: Attack +5 · Save -1");
+  assert.equal(describeModifiers({ attack: 0, initiative: 2, saving: 0 }), "Modifiers: Initiative +2");
+});
