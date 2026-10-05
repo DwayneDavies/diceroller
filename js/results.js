@@ -1,4 +1,4 @@
-import { formatBreakdown } from "./core.js";
+import { formatBreakdown, formatVersusText, versusVerdict } from "./core.js";
 
 // --- d20 natural 1 / 20 ---
 function dieValueClass(value, sides) {
@@ -9,19 +9,11 @@ function dieValueClass(value, sides) {
   return "die-value";
 }
 
-// The natural 1 / natural 20 banner looks at the d20 that counts: the only
-// die, or the kept one when rolling with advantage or disadvantage.
-export function d20OutcomeBanner(rolls, sides, rollKind, mode = "normal") {
-  if (sides !== 20) return null;
+// Natural 1 / natural 20 banner for a single d20 roll.
+export function d20OutcomeBanner(rolls, sides, rollKind) {
+  if (sides !== 20 || rolls.length !== 1) return null;
 
-  let face = null;
-  if (rolls.length === 1) {
-    face = rolls[0];
-  } else if (rolls.length === 2 && mode === "advantage") {
-    face = Math.max(rolls[0], rolls[1]);
-  } else if (rolls.length === 2 && mode === "disadvantage") {
-    face = Math.min(rolls[0], rolls[1]);
-  }
+  const face = rolls[0];
   if (face !== 1 && face !== 20) return null;
 
   const isNat1 = face === 1;
@@ -34,22 +26,22 @@ export function d20OutcomeBanner(rolls, sides, rollKind, mode = "normal") {
 // --- Copy last roll ---
 let lastRoll = null;
 
-function copyLabel(labelText, rollKind, mode) {
+function copyLabel(labelText, rollKind) {
   const short = {
     attack: "Attack",
     initiative: "Initiative",
     saving: "Saving Throw",
   };
-  if (!short[rollKind]) return labelText.replace(/:$/, "").trim();
-  const suffix = mode === "advantage" ? " (Advantage)" : mode === "disadvantage" ? " (Disadvantage)" : "";
-  return short[rollKind] + suffix;
+  if (short[rollKind]) return short[rollKind];
+  return labelText.replace(/:$/, "").trim();
 }
 
 export function formatLastRollText() {
   if (!lastRoll) return null;
-  const { labelText, rolls, result, mod, banner, rollKind, mode, breakdownRolls } =
+  if (lastRoll.copyText) return lastRoll.copyText;
+  const { labelText, rolls, result, mod, banner, rollKind, breakdownRolls } =
     lastRoll;
-  const name = copyLabel(labelText, rollKind, mode);
+  const name = copyLabel(labelText, rollKind);
   const breakdown = formatBreakdown(breakdownRolls ?? rolls, mod);
   let text = `${name}: ${result} (${breakdown})`;
   if (banner) text += ` — ${banner}`;
@@ -122,8 +114,7 @@ export function addResultBox(labelText, rolls, result, typeClass = "", options =
     div.appendChild(die);
   });
 
-  const mode = options.mode || "normal";
-  const banner = d20OutcomeBanner(rolls, sides, rollKind, mode);
+  const banner = d20OutcomeBanner(rolls, sides, rollKind);
   if (banner) {
     const badge = document.createElement("span");
     badge.className =
@@ -145,8 +136,56 @@ export function addResultBox(labelText, rolls, result, typeClass = "", options =
     result,
     mod: options.mod || 0,
     rollKind,
-    mode,
     banner: banner ? banner.text : null,
     breakdownRolls: options.breakdownRolls,
   };
+}
+
+// --- Versus result box ---
+function versusSideElement(name, side, sides, isWinner) {
+  const el = document.createElement("div");
+  el.className = "versus-side" + (isWinner ? " is-winner" : "");
+
+  const nameEl = document.createElement("span");
+  nameEl.className = "versus-name";
+  nameEl.textContent = name;
+
+  const die = document.createElement("span");
+  die.className = dieValueClass(side.roll, sides);
+  die.textContent = side.roll;
+  if (sides === 20 && (side.roll === 1 || side.roll === 20)) {
+    die.title = side.roll === 1 ? "Natural 1" : "Natural 20";
+  }
+
+  const total = document.createElement("span");
+  total.className = "versus-total";
+  const modText = side.mod > 0 ? `+${side.mod} ` : side.mod < 0 ? `${side.mod} ` : "";
+  total.textContent = `${modText}= ${side.total}`;
+
+  el.append(nameEl, die, total);
+  return el;
+}
+
+export function addVersusResultBox(result, nameA, nameB, sides) {
+  const resultsBox = document.getElementById("results");
+  const div = document.createElement("div");
+  div.className = "result-box result-versus";
+
+  const vs = document.createElement("span");
+  vs.className = "versus-vs";
+  vs.textContent = "vs";
+
+  const verdict = document.createElement("span");
+  verdict.className = "versus-verdict";
+  verdict.textContent = versusVerdict(result, nameA, nameB);
+
+  div.append(
+    versusSideElement(nameA, result.a, sides, result.winner === "a"),
+    vs,
+    versusSideElement(nameB, result.b, sides, result.winner === "b"),
+    verdict
+  );
+  resultsBox.appendChild(div);
+
+  lastRoll = { copyText: formatVersusText(result, nameA, nameB) };
 }

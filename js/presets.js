@@ -1,4 +1,4 @@
-import { rollMany, rollD20, formatExpr, sum } from "./core.js";
+import { rollDie, rollMany, formatExpr, sum } from "./core.js";
 import { playSoundForDie } from "./sound.js";
 import { addResultBox } from "./results.js";
 import {
@@ -50,13 +50,8 @@ export function initD20PresetModifiers() {
   }
 }
 
-// Attack, initiative and saving throw share one roll: a d20 (or two, kept
-// high or low) plus that roll's modifier, using the selected roll mode.
-export function getRollMode() {
-  const checked = document.querySelector("input[name='roll-mode']:checked");
-  return checked ? checked.value : "normal";
-}
-
+// Attack, initiative and saving throw share one roll: a d20 plus that
+// roll's modifier.
 const D20_ROLLS = {
   attack: { title: "Attack Roll", className: "result-attack" },
   initiative: { title: "Initiative", className: "result-initiative" },
@@ -66,16 +61,12 @@ const D20_ROLLS = {
 function rollD20Check(kind) {
   playSoundForDie(20);
   const { title, className } = D20_ROLLS[kind];
-  const mode = getRollMode();
   const mod = getD20PresetMod(kind);
-  const { rolls, kept } = rollD20(mode);
-  const suffix = mode === "normal" ? "" : ` (${mode === "advantage" ? "Advantage" : "Disadvantage"})`;
-  addResultBox(`${title}${suffix}:`, rolls, kept + mod, className, {
+  const roll = rollDie(20);
+  addResultBox(`${title}:`, [roll], roll + mod, className, {
     sides: 20,
     rollKind: kind,
-    mode,
     mod,
-    breakdownRolls: rolls.length > 1 ? [kept] : undefined,
   });
 }
 

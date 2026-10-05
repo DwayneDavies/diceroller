@@ -9,6 +9,7 @@ import {
   initD20PresetModifiers,
 } from "./presets.js";
 import { findRollStats, redrawDistribution } from "./stats.js";
+import { initVersus } from "./versus.js";
 import {
   applySettings,
   initSettingsModal,
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPresets();
   initD20PresetModifiers();
   initPresetEditor();
+  initVersus();
   initSettingsModal();
   initResultsMenu();
 

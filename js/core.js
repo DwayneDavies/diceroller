@@ -10,20 +10,6 @@ export function rollMany(times, sides) {
   return rolls;
 }
 
-export const ROLL_MODES = ["disadvantage", "normal", "advantage"];
-
-// One d20, or two with the higher (advantage) or lower (disadvantage) kept.
-// `die` can be swapped out in tests to supply known rolls.
-export function rollD20(mode = "normal", die = rollDie) {
-  const first = die(20);
-  if (mode !== "advantage" && mode !== "disadvantage") {
-    return { rolls: [first], kept: first };
-  }
-  const second = die(20);
-  const kept = mode === "advantage" ? Math.max(first, second) : Math.min(first, second);
-  return { rolls: [first, second], kept };
-}
-
 export function sum(values) {
   return values.reduce((a, b) => a + b, 0);
 }
@@ -53,4 +39,66 @@ export function formatExpr(times, sides, mod) {
   if (mod > 0) s += `+${mod}`;
   else if (mod < 0) s += mod;
   return s;
+}
+
+// --- Versus (opposed) rolls ---
+export const TIE_RULES = ["tie", "a", "b"];
+export const MAX_VERSUS_NAME = 20;
+export const VERSUS_DEFAULTS = {
+  nameA: "You",
+  modA: 0,
+  nameB: "Opponent",
+  modB: 0,
+  sides: 20,
+  tie: "tie",
+};
+
+// Both sides roll the same die; the higher total wins. On equal totals the
+// `tie` rule decides: "tie" leaves it a tie, "a" or "b" gives that side the win.
+// `die` can be swapped out in tests to supply known rolls (side A rolls first).
+export function rollVersus({ sides, modA, modB, tie = "tie" }, die = rollDie) {
+  const rollA = die(sides);
+  const rollB = die(sides);
+  const totalA = rollA + modA;
+  const totalB = rollB + modB;
+  const tied = totalA === totalB;
+  let winner;
+  if (!tied) winner = totalA > totalB ? "a" : "b";
+  else winner = tie === "a" || tie === "b" ? tie : "tie";
+  return {
+    a: { roll: rollA, mod: modA, total: totalA },
+    b: { roll: rollB, mod: modB, total: totalB },
+    winner,
+    tied,
+    margin: Math.abs(totalA - totalB),
+  };
+}
+
+export function versusVerdict(result, nameA, nameB) {
+  const nameOf = (side) => (side === "a" ? nameA : nameB);
+  if (!result.tied) return `${nameOf(result.winner)} wins by ${result.margin}`;
+  if (result.winner === "tie") return "Tie";
+  return `Tie, ${nameOf(result.winner)} wins the tie`;
+}
+
+export function formatVersusText(result, nameA, nameB) {
+  const side = (name, s) => `${name} ${s.total} (${formatBreakdown([s.roll], s.mod)})`;
+  return `Versus: ${side(nameA, result.a)} vs ${side(nameB, result.b)} — ${versusVerdict(result, nameA, nameB)}`;
+}
+
+// Rebuilds the saved versus form from untrusted input: clamps numbers,
+// trims names and falls back to the defaults for anything unusable.
+export function sanitizeVersusSettings(raw) {
+  const r = raw && typeof raw === "object" ? raw : {};
+  const name = (value, fallback) =>
+    typeof value === "string" && value.trim() ? value.trim().slice(0, MAX_VERSUS_NAME) : fallback;
+  const d = VERSUS_DEFAULTS;
+  return {
+    nameA: name(r.nameA, d.nameA),
+    modA: clampInt(r.modA, d.modA, ...LIMITS.mod),
+    nameB: name(r.nameB, d.nameB),
+    modB: clampInt(r.modB, d.modB, ...LIMITS.mod),
+    sides: clampInt(r.sides, d.sides, ...LIMITS.sides),
+    tie: TIE_RULES.includes(r.tie) ? r.tie : d.tie,
+  };
 }
