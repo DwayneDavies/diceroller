@@ -2,6 +2,9 @@ import { loadSetting } from "./storage.js";
 import { SOUND_DEFAULT } from "./sound.js";
 import { redrawDistribution } from "./stats.js";
 
+// Find Roll Stats is optional and off until the player turns it on.
+export const STATS_DEFAULT = false;
+
 export const DEFAULT_THEME = "midnight";
 export const THEMES = ["midnight", "dark", "parchment", "neon"];
 // Browser toolbar color on phones, matched to each theme's background.
@@ -24,7 +27,18 @@ export function applyDisplayMode(mode) {
   document.getElementById("dice-panel").classList.toggle("hidden", mode === "presets");
   document.getElementById("preset-panel").classList.toggle("hidden", mode === "dice");
 }
+export function applyStatsEnabled(enabled) {
+  document.body.dataset.stats = enabled ? "on" : "off";
+  // The percentages option only matters while the stats panel exists.
+  const percent = document.getElementById("percent-toggle");
+  percent.disabled = !enabled;
+  percent.closest("label").classList.toggle("is-disabled", !enabled);
+}
+
 export function applySettings() {
+  const statsEnabled = loadSetting("statsEnabled", STATS_DEFAULT) === true;
+  document.getElementById("stats-toggle").checked = statsEnabled;
+  applyStatsEnabled(statsEnabled);
   const soundEnabled = loadSetting("soundEnabled", SOUND_DEFAULT);
   document.getElementById("sound-toggle").checked = soundEnabled;
   document.getElementById("theme-select").value = applyTheme(loadSetting("theme", DEFAULT_THEME));

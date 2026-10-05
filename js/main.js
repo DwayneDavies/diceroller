@@ -15,6 +15,7 @@ import {
   initSettingsModal,
   applyDisplayMode,
   applyTheme,
+  applyStatsEnabled,
 } from "./settings.js";
 import { saveSetting } from "./storage.js";
 import { initResultsMenu } from "./results-menu.js";
@@ -66,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("theme-select").addEventListener("change", (e) => {
     saveSetting("theme", e.target.value);
     applyTheme(e.target.value);
+  });
+
+  document.getElementById("stats-toggle").addEventListener("change", (e) => {
+    saveSetting("statsEnabled", e.target.checked);
+    applyStatsEnabled(e.target.checked);
   });
 
   document.getElementById("percent-toggle").addEventListener("change", (e) => {

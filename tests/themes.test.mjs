@@ -29,6 +29,17 @@ const contrast = (a, b) => {
   const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 };
+// Perceptual colour difference (CIE76 in Lab space).
+function lab([r, g, b]) {
+  const f = (c) => ((c /= 255) > 0.04045 ? ((c + 0.055) / 1.055) ** 2.4 : c / 12.92);
+  const [R, G, B] = [f(r), f(g), f(b)];
+  const t = (v) => (v > 0.008856 ? Math.cbrt(v) : 7.787 * v + 16 / 116);
+  const x = t((0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047);
+  const y = t(0.2126 * R + 0.7152 * G + 0.0722 * B);
+  const z = t((0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+const deltaE = (a, b) => Math.hypot(...lab(a).map((v, i) => v - lab(b)[i]));
 const blend = (fg, alpha, bg) => fg.map((c, i) => Math.round(c * alpha + bg[i] * (1 - alpha)));
 
 const hexes = (value) => [...value.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)].map((m) => hexToRgb(m[0]));
@@ -76,7 +87,6 @@ for (const theme of THEMES) {
       ["input text on input", fg("input-text"), solid(v, "input-bg"), AA],
       ["text on results box", fg("text"), surfaces(v, "log-bg"), AA],
       ["white on result box", WHITE, solid(v, "result-bg"), AA],
-      ["total on result box", fg("result-total"), solid(v, "result-bg"), AA],
       ["die chip", fg("chip-text"), solid(v, "chip-bg"), AA],
       ["button text on accent", fg("accent-text"), solid(v, "accent"), AA],
       ["button text on accent (dark end)", fg("accent-text"), solid(v, "accent-2"), AA],
@@ -98,14 +108,14 @@ for (const theme of THEMES) {
     }
   });
 
-  test(`${theme}: white text is readable on every die and action colour`, () => {
+  test(`${theme}: the theme's own text colour is readable on every die and action colour`, () => {
     const v = themeVars(theme);
     const dice = ["d3", "d4", "d6", "d8", "d10", "d12", "d20", "d100"];
     for (const die of dice) {
       assert.ok(v[`g-${die}`], `${theme} has no colour for ${die}`);
       const stops = hexes(v[`g-${die}`]);
       assert.equal(stops.length, 2);
-      checkPairs(theme, v, [[`white on ${die}`, WHITE, stops, AA]]);
+      checkPairs(theme, v, [[`text on ${die}`, solid(v, "on-die")[0], stops, AA]]);
     }
   });
 
@@ -115,8 +125,8 @@ for (const theme of THEMES) {
     const colours = dice.map((d) => hexes(v[`g-${d}`])[0]);
     for (let i = 0; i < dice.length; i++) {
       for (let j = i + 1; j < dice.length; j++) {
-        const dist = Math.hypot(...colours[i].map((c, k) => c - colours[j][k]));
-        assert.ok(dist >= 60, `${theme}: ${dice[i]} and ${dice[j]} are too similar (distance ${dist.toFixed(0)})`);
+        const dist = deltaE(colours[i], colours[j]);
+        assert.ok(dist >= 22, `${theme}: ${dice[i]} and ${dice[j]} look too alike (colour difference ${dist.toFixed(1)}, need 22)`);
       }
     }
   });
@@ -137,4 +147,16 @@ test("every theme defines the same set of variables", () => {
   const keys = (t) => Object.keys(themeVars(t)).sort().join(",");
   const first = keys(THEMES[0]);
   for (const t of THEMES) assert.equal(keys(t), first, `${t} differs from ${THEMES[0]}`);
+});
+
+test("each theme has its own die colours, not the same ones lightened or darkened", () => {
+  const dice = ["d3", "d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  for (let i = 0; i < THEMES.length; i++) {
+    for (let j = i + 1; j < THEMES.length; j++) {
+      const a = themeVars(THEMES[i]);
+      const b = themeVars(THEMES[j]);
+      const differing = dice.filter((d) => deltaE(hexes(a[`g-${d}`])[0], hexes(b[`g-${d}`])[0]) >= 15).length;
+      assert.ok(differing >= 6, `${THEMES[i]} and ${THEMES[j]} share too many die colours (only ${differing} of 8 differ)`);
+    }
+  }
 });

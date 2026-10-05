@@ -24,6 +24,12 @@
         document.body.className = "theme-" + savedTheme;
       }
     } catch (e) {}
+    // "Find Roll Stats" is off unless the player turned it on in Settings.
+    try {
+      document.body.dataset.stats = JSON.parse(localStorage.getItem("statsEnabled")) === true ? "on" : "off";
+    } catch (e) {
+      document.body.dataset.stats = "off";
+    }
     try {
       document.body.dataset.results = JSON.parse(localStorage.getItem("resultsPosition")) === "bottom" ? "bottom" : "top";
     } catch (e) {
@@ -133,8 +139,8 @@
     }
   </script>
 
-  <!-- Find Roll Stats -->
-  <details>
+  <!-- Find Roll Stats (hidden unless enabled in Settings) -->
+  <details id="stats-panel">
     <summary>Find Roll Stats (xdy + z)</summary>
     <div class="input-group">
       <label>Times (x): <input type="number" id="stat-times" min="1" max="100" value="1"></label>
@@ -178,6 +184,7 @@
           <option value="neon">Neon</option>
         </select>
       </label>
+      <label><input type="checkbox" id="stats-toggle"> Show Find Roll Stats</label>
       <label><input type="checkbox" id="percent-toggle"> Show Percentages in Stats</label>
 
       <!-- Roll Results -->
