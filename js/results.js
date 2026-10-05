@@ -84,6 +84,14 @@ export function hasLastRoll() {
   return lastRoll !== null;
 }
 
+// Short text for the pinned "latest roll" bar, e.g. "Attack: 17 — Critical hit!".
+export function latestRollSummary() {
+  if (!lastRoll) return "";
+  if (lastRoll.copyText) return lastRoll.copyText.replace(/^Versus: /, "");
+  const name = copyLabel(lastRoll.labelText, lastRoll.rollKind);
+  return `${name}: ${lastRoll.result}${lastRoll.banner ? ` — ${lastRoll.banner}` : ""}`;
+}
+
 export function hasResults() {
   return records.length > 0;
 }
@@ -231,9 +239,12 @@ function addRecord(record) {
   hideToast("undo-hint");
   records = appendRecord(records, record);
   drawRecord(record);
+  const resultsBox = document.getElementById("results");
+  if (resultsBox) resultsBox.scrollTop = 0; // keep the newest roll in view inside the box
   lastRoll = lastRollFor(record);
   persist();
   notifyChange();
+  document.dispatchEvent(new CustomEvent("rolladded"));
 }
 
 // --- Public: adding, restoring, clearing ---

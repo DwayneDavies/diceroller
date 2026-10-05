@@ -16,20 +16,36 @@
 </head>
 <body class="theme-midnight">
   <script>
-    // Apply the saved theme before the page first paints, so it doesn't
-    // flash the default theme on load. js/settings.js takes over after this.
+    // Apply the saved theme and results position before the page first paints,
+    // so it doesn't flash the defaults on load. The js/ modules take over after this.
     try {
       var savedTheme = JSON.parse(localStorage.getItem("theme"));
       if (["midnight", "dark", "parchment", "neon"].indexOf(savedTheme) >= 0) {
         document.body.className = "theme-" + savedTheme;
       }
     } catch (e) {}
+    try {
+      document.body.dataset.results = JSON.parse(localStorage.getItem("resultsPosition")) === "bottom" ? "bottom" : "top";
+    } catch (e) {
+      document.body.dataset.results = "top";
+    }
   </script>
 
   <h1>🎲 Dice Roller</h1>
 
   <!-- Gear icon -->
   <button type="button" id="settings-gear" class="gear-icon" aria-label="Settings" title="Settings">⚙️</button>
+
+  <!-- Results: toolbar, messages and the roll log. Moved below the dice when the "Show results" setting says so. -->
+  <div id="results-section" class="results-section">
+    <div class="results-toolbar">
+      <button type="button" id="copy-last-btn" class="tool-btn" title="Copy last roll (Alt+C)">Copy last roll</button>
+      <button type="button" id="clear-results-btn" class="tool-btn">Clear results</button>
+    </div>
+    <p id="copy-last-hint" class="copy-last-hint hidden" role="status">Last roll copied to clipboard.</p>
+    <p id="undo-hint" class="copy-last-hint hidden" role="status">Results cleared. <button type="button" id="undo-clear" class="link-btn">Undo</button></p>
+    <div id="results" role="log" aria-live="polite" aria-relevant="additions" aria-label="Roll results"></div>
+  </div>
 
   <!-- Dice Buttons Collapsible -->
   <details open id="dice-panel">
@@ -94,15 +110,6 @@
     </details>
   </details>
 
-  <!-- Results Log -->
-  <div class="results-toolbar">
-    <button type="button" id="copy-last-btn" class="tool-btn" title="Copy last roll (Alt+C)">Copy last roll</button>
-    <button type="button" id="clear-results-btn" class="tool-btn">Clear results</button>
-  </div>
-  <p id="copy-last-hint" class="copy-last-hint hidden" role="status">Last roll copied to clipboard.</p>
-  <p id="undo-hint" class="copy-last-hint hidden" role="status">Results cleared. <button type="button" id="undo-clear" class="link-btn">Undo</button></p>
-  <div id="results" role="log" aria-live="polite" aria-relevant="additions" aria-label="Roll results"></div>
-
   <!-- Custom context menu -->
   <ul id="results-menu" class="context-menu">
     <li id="copy-last-roll">Copy last roll (Alt+C)</li>
@@ -110,7 +117,7 @@
   </ul>
 
   <!-- Custom Roll -->
-  <details>
+  <details id="custom-panel">
     <summary>Custom Roll (xdy + z)</summary>
     <div class="input-group">
       <label>Times (x): <input type="number" id="times" min="1" max="100" value="1"></label>
@@ -119,6 +126,12 @@
     </div>
     <button onclick="customRoll(event)">Roll Custom</button>
   </details>
+  <script>
+    // "Show results: below the dice" - place the results before first paint.
+    if (document.body.dataset.results === "bottom") {
+      document.getElementById("custom-panel").before(document.getElementById("results-section"));
+    }
+  </script>
 
   <!-- Find Roll Stats -->
   <details>
@@ -167,12 +180,31 @@
       </label>
       <label><input type="checkbox" id="percent-toggle"> Show Percentages in Stats</label>
 
+      <!-- Roll Results -->
+      <h3>Roll Results</h3>
+      <label>Show results:
+        <select id="results-position">
+          <option value="top">Above the dice</option>
+          <option value="bottom">Below the dice</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="latest-bar-toggle"> Pin the latest roll to the top of the screen when the results are out of view</label>
+      <label><input type="checkbox" id="scroll-toggle"> Scroll to the results after each roll</label>
+
       <!-- Display Options -->
       <h3>Display Options</h3>
       <label><input type="radio" name="display-mode" value="both" checked> Show Both</label>
       <label><input type="radio" name="display-mode" value="dice"> Dice Only</label>
       <label><input type="radio" name="display-mode" value="presets"> Presets Only</label>
     </div>
+  </div>
+
+  <!-- Pinned latest roll (Settings > Roll Results) -->
+  <div id="latest-bar" class="latest-bar hidden">
+    <button type="button" id="latest-bar-btn" class="latest-bar-btn" title="Show all results">
+      <span class="latest-label">Latest roll</span>
+      <span id="latest-text"></span>
+    </button>
   </div>
 
   <footer class="app-footer">Dice Roller <span id="app-version"></span></footer>

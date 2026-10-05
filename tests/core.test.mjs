@@ -146,3 +146,12 @@ test("describeModifiers lists only the non-zero modifiers", () => {
   assert.equal(describeModifiers({ attack: 5, initiative: 0, saving: -1 }), "Modifiers: Attack +5 · Save -1");
   assert.equal(describeModifiers({ attack: 0, initiative: 2, saving: 0 }), "Modifiers: Initiative +2");
 });
+
+import { normalizeResultsPosition, RESULTS_POSITIONS } from "../js/core.js";
+
+test("results position is either top or bottom, defaulting to top", () => {
+  assert.deepEqual(RESULTS_POSITIONS, ["top", "bottom"]);
+  assert.equal(normalizeResultsPosition("bottom"), "bottom");
+  assert.equal(normalizeResultsPosition("top"), "top");
+  for (const bad of [undefined, null, "", "left", 5, {}]) assert.equal(normalizeResultsPosition(bad), "top");
+});

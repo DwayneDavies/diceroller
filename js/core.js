@@ -113,3 +113,9 @@ export function describeModifiers({ attack = 0, initiative = 0, saving = 0 } = {
   if (saving) parts.push(`Save ${signed(saving)}`);
   return parts.length ? `Modifiers: ${parts.join(" · ")}` : "Modifiers (none set)";
 }
+
+// Where the roll results sit on the page: above or below the dice.
+export const RESULTS_POSITIONS = ["top", "bottom"];
+export function normalizeResultsPosition(value) {
+  return RESULTS_POSITIONS.includes(value) ? value : "top";
+}

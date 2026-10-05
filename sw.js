@@ -20,6 +20,7 @@ const APP_FILES = [
   "js/pwa.js",
   "js/results-menu.js",
   "js/results.js",
+  "js/rollview.js",
   "js/settings.js",
   "js/sound.js",
   "js/stats.js",

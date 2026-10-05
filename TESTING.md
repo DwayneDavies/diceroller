@@ -26,6 +26,8 @@ because browsers block the JavaScript modules on `file://` pages.
 - [ ] Attack, Initiative, Saving Throw and Ability Score roll; changing a modifier changes the result and the "Modifiers" heading.
 - [ ] Versus Roll: both sides roll, the winner is highlighted, the tie rule works.
 - [ ] Custom Roll and Find Roll Stats (try 50d6) work; the chart is readable.
+- [ ] The newest roll is visible right after rolling, without scrolling (results sit above the dice by default).
+- [ ] Settings > Roll Results: "Below the dice" moves the results; "Pin the latest roll" shows a bar only when the results are out of view and tapping it jumps to them; "Scroll to the results" scrolls after each roll.
 - [ ] Settings opens, Escape or ✕ closes it, and typing in a field does not zoom the page (iPhone).
 - [ ] All four themes look right (Midnight, Violet, Parchment, Neon): page, panels, Settings, chart, and each die has its own colour.
 - [ ] Reload: theme, sound setting, presets, modifiers, Versus values and recent rolls are all still there.

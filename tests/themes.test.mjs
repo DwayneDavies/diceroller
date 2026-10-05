@@ -85,6 +85,7 @@ for (const theme of THEMES) {
       ["text on dialog", fg("text"), solid(v, "modal-bg"), AA],
       ["close button on dialog", fg("muted"), solid(v, "modal-bg"), 3],
       ["menu text", fg("text"), solid(v, "menu-bg"), AA],
+      ["pinned bar label", fg("muted"), solid(v, "menu-bg"), AA],
       ["chart text", fg("chart-text"), solid(v, "chart-bg"), AA],
       ["chart bars", fg("chart-bar"), solid(v, "chart-bg"), 3],
       ["white on custom preset buttons", WHITE, solid(v, "preset-bg"), AA],

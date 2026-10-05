@@ -302,6 +302,61 @@ h1 {
   gap: 12px;
 }
 
+/* The results area (toolbar, messages, log) is one movable block: it takes no
+   box of its own so its children lay out as direct children of the page. */
+.results-section { display: contents; }
+
+/* Results above the dice: keep the log short so the dice stay in reach */
+body[data-results="top"] #results { max-height: min(30vh, 260px); }
+
+/* Pinned latest roll: floats over the page, out of the layout flow */
+.latest-bar {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  right: 60px; /* clear of the settings gear */
+  z-index: 500;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.latest-bar-btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  max-width: min(100%, 640px);
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--menu-bg);
+  color: var(--text);
+  box-shadow: 0 6px 18px var(--shadow);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.latest-label {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#latest-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Buttons above the results */
 .results-toolbar {
   display: flex;
@@ -625,6 +680,8 @@ details button:not(.dice-btn):not(.preset-btn):hover {
     margin: 0;
     overflow-wrap: anywhere;
   }
+
+  h1 { font-size: 2em; margin: 16px 52px; } /* leaves room for the settings gear */
 
   /* Keep everything off the screen edges */
   body { padding-inline: 10px; box-sizing: border-box; }

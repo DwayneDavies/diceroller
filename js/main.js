@@ -19,6 +19,7 @@ import {
 import { saveSetting } from "./storage.js";
 import { initResultsMenu } from "./results-menu.js";
 import { restoreResults } from "./results.js";
+import { initRollView } from "./rollview.js";
 import { registerServiceWorker } from "./pwa.js";
 import { VERSION } from "./version.js";
 
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSettingsModal();
   restoreResults();
   initResultsMenu();
+  initRollView();
 
   document.querySelector(".dice-row").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-sides]");
