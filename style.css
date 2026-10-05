@@ -43,6 +43,18 @@ body {
   display: flex; flex-direction: column;
   align-items: center;
   min-height: 100vh;
+  min-height: 100dvh; /* phones: excludes the browser toolbar */
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+/* No double-tap zoom or tap delay on controls */
+button, summary, label, select, input { touch-action: manipulation; }
+
+.app-footer {
+  margin: 8px 0 20px;
+  color: var(--muted);
+  font-size: 0.85em;
 }
 
 body.theme-parchment {
@@ -512,17 +524,26 @@ details button:not(.dice-btn):not(.preset-btn):hover {
 
 /* Responsive layout */
 @media (max-width: 600px) {
+  /* Two buttons per row so all the dice fit on about one screen */
   .dice-row, .preset-row {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0;
   }
 
-  .dice-btn, .preset-btn {
+  .dice-btn, .preset-btn, .preset-row .custom-preset {
     width: 100%;
-    font-size: 1.4em;
-    padding: 20px;
-    margin: 10px 0;
+    box-sizing: border-box;
+    font-size: 1.25em;
+    padding: 18px 8px;
+    margin: 0;
+    overflow-wrap: anywhere;
   }
+
+  /* Keep everything off the screen edges */
+  body { padding-inline: 10px; box-sizing: border-box; }
+  #results, .copy-last-hint { width: 100%; }
 
   #results {
     font-size: 1em;
@@ -631,8 +652,8 @@ details button:not(.dice-btn):not(.preset-btn):hover {
 /* Gear icon */
 .gear-icon {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 8px;
+  right: 8px;
   cursor: pointer;
   font-size: 26px;
   color: var(--accent);
@@ -640,6 +661,11 @@ details button:not(.dice-btn):not(.preset-btn):hover {
   border: none;
   padding: 0;
   line-height: 1;
+  /* 44px hit area for thumbs */
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -724,6 +750,7 @@ details button:not(.dice-btn):not(.preset-btn):hover {
 .settings-content input[type="number"],
 .settings-content select {
   margin-left: 5px;
+  font-size: 16px; /* 16px or more stops iOS Safari zooming in on focus */
   padding: 5px;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -785,4 +812,22 @@ details button:not(.dice-btn):not(.preset-btn):hover {
 @keyframes popupFade {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Respect "reduce motion": no shaking, spinning, scaling or fading */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .dice-btn:hover, .preset-btn:hover,
+  .dice-btn:active, .preset-btn:active,
+  .gear-icon:hover { transform: none; }
+}
+
+/* Touch screens: make panel headings and the toolbar easy to hit */
+@media (pointer: coarse) {
+  details summary { padding-block: 10px; }
+  .tool-btn { min-height: 44px; padding-inline: 14px; }
 }

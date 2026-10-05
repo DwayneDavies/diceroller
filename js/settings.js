@@ -3,12 +3,16 @@ import { SOUND_DEFAULT } from "./sound.js";
 import { redrawDistribution } from "./stats.js";
 
 export const THEMES = ["dark", "parchment", "neon"];
+// Browser toolbar color on phones, matched to each theme's background.
+const THEME_COLORS = { dark: "#2e003e", parchment: "#fdf6e3", neon: "#0f0c29" };
 
 // --- Theme & display ---
 export function applyTheme(theme) {
   if (!THEMES.includes(theme)) theme = "dark";
   document.body.classList.remove(...THEMES.map((t) => "theme-" + t));
   document.body.classList.add("theme-" + theme);
+  const meta = document.querySelector("meta[name='theme-color']");
+  if (meta) meta.setAttribute("content", THEME_COLORS[theme]);
   // The chart is drawn on a canvas, so it has to be repainted in the new colors.
   redrawDistribution();
   return theme;

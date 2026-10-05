@@ -19,6 +19,8 @@ import {
 import { saveSetting } from "./storage.js";
 import { initResultsMenu } from "./results-menu.js";
 import { restoreResults } from "./results.js";
+import { registerServiceWorker } from "./pwa.js";
+import { VERSION } from "./version.js";
 
 // Expose handlers used by inline onclick attributes in index.html
 Object.assign(window, {
@@ -30,7 +32,10 @@ Object.assign(window, {
   findRollStats,
 });
 
+registerServiceWorker();
+
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("app-version").textContent = `v${VERSION}`;
   applySettings();
   renderPresets();
   initD20PresetModifiers();
