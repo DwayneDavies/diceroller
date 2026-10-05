@@ -113,6 +113,7 @@ export function findRollStats(event) {
 
   shake(event.target);
 
+  document.getElementById("stats-container").hidden = false;
   const { mean, variance, stdDev } = analyticStats(times, sides, mod);
   const summaryEl = document.getElementById("stats-summary");
   if (summaryEl) {

@@ -88,9 +88,8 @@ for (const theme of THEMES) {
       ["text on results box", fg("text"), surfaces(v, "log-bg"), AA],
       ["white on result box", WHITE, solid(v, "result-bg"), AA],
       ["die chip", fg("chip-text"), solid(v, "chip-bg"), AA],
-      ["button text on accent", fg("accent-text"), solid(v, "accent"), AA],
-      ["button text on accent (dark end)", fg("accent-text"), solid(v, "accent-2"), AA],
-      ["button text on accent (hover)", fg("accent-text"), solid(v, "accent-hover"), AA],
+      ["action button text (Roll Custom, Roll Versus...)", fg("on-action"), solid(v, "g-action"), AA],
+      ["action button text on hover", fg("on-action"), solid(v, "g-action-hover"), AA],
       ["Settings heading on dialog", fg("accent"), solid(v, "modal-bg"), AA],
       ["text on dialog", fg("text"), solid(v, "modal-bg"), AA],
       ["close button on dialog", fg("muted"), solid(v, "modal-bg"), 3],
@@ -157,6 +156,20 @@ test("each theme has its own die colours, not the same ones lightened or darkene
       const b = themeVars(THEMES[j]);
       const differing = dice.filter((d) => deltaE(hexes(a[`g-${d}`])[0], hexes(b[`g-${d}`])[0]) >= 15).length;
       assert.ok(differing >= 6, `${THEMES[i]} and ${THEMES[j]} share too many die colours (only ${differing} of 8 differ)`);
+    }
+  }
+});
+
+test("each theme's action buttons have their own colour, apart from the dice", () => {
+  const dice = ["d3", "d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  const actions = THEMES.map((t) => hexes(themeVars(t)["g-action"])[0]);
+  for (let i = 0; i < THEMES.length; i++) {
+    for (let j = i + 1; j < THEMES.length; j++) {
+      assert.ok(deltaE(actions[i], actions[j]) >= 22, `${THEMES[i]} and ${THEMES[j]} have near-identical action buttons`);
+    }
+    const v = themeVars(THEMES[i]);
+    for (const d of dice) {
+      assert.ok(deltaE(actions[i], hexes(v[`g-${d}`])[0]) >= 15, `${THEMES[i]}: action button is too close to ${d}`);
     }
   }
 });
