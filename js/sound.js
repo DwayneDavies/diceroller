@@ -15,7 +15,6 @@ const VOICES = {
   20: { bounces: 6, pitch: 1700 },
   100: { bounces: 8, pitch: 1300 },
   custom: { bounces: 7, pitch: 2400 },
-  stats: { bounces: 2, pitch: 3000 },
 };
 
 const noiseBuffers = new WeakMap();

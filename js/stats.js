@@ -1,4 +1,3 @@
-import { playSoundForDie } from "./sound.js";
 import { loadSetting } from "./storage.js";
 import { readExprInputs, shake } from "./dice.js";
 
@@ -92,7 +91,6 @@ export function drawDistribution(times, sides, mod) {
 }
 
 export function findRollStats(event) {
-  playSoundForDie("stats");
   const { times, sides, mod } = readExprInputs("stat-times", "stat-sides", "stat-mod");
 
   shake(event.target);
